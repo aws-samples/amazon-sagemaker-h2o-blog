@@ -1,0 +1,380 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A sagemaker model tuning step function as a Cloudformation stack.
+
+# Metadata associated with this stack.
+Metadata:
+
+  # Cloudformation interface for parameters.
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      # General parameters label.
+      - Label:
+          default: General Parameters
+        Parameters:
+          - Environment
+
+    # Labels for the above parameters.
+    ParameterLabels:
+      Environment:
+        default: Environment name
+
+# Parameters exposed by this template.
+Parameters:
+  # General parameters.
+  Environment:
+    Type: String
+    Description: >
+      The environment name on which you would like to deploy the project.
+      This identifier will be used to tag created resources.
+    Default: development
+    MinLength: 1
+    ConstraintDescription: The environment cannot be empty.
+
+# Parameters exposed by this template.
+Resources:
+
+  # Customer Managed Policy to Provide Access to CW Logs
+  AmazonSagemakerCWAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:CreateLogGroup
+              - logs:DescribeLogStreams
+            Resource: '*'
+
+  # Customer Managed Policy to Provide Access to Amazon ECR
+  AmazonSagemakerAmazonECRAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ecr:GetAuthorizationToken
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - ecr:BatchCheckLayerAvailability
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+            Resource: 
+              - !Sub 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*'
+  
+  # Customer Managed Policy to Provide Access to VPC
+  AmazonSagemakerVPCAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ec2:CreateNetworkInterface
+              - ec2:CreateNetworkInterfacePermission
+              - ec2:DeleteNetworkInterface
+              - ec2:DeleteNetworkInterfacePermission
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DescribeVpcs
+              - ec2:DescribeDhcpOptions
+              - ec2:DescribeSubnets
+              - ec2:DescribeSecurityGroups
+            Resource: '*'
+  
+  # IAM Role associated with the Sagemaker Service Integrations in `ModelTuningStateMachine` state machine.
+  # https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html#sagemaker-roles-createhyperparametertiningjob-perms
+  SagemakerHyperparamerTuningExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - !Ref AmazonSagemakerCWAccessPolicy
+        - !Ref AmazonSagemakerAmazonECRAccessPolicy
+        - !Ref AmazonSagemakerVPCAccessPolicy
+      Policies:
+        - PolicyName: AmazonSagemakerExecutionRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource: 
+                  - 'arn:aws:s3:::*'
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+  
+  # IAM Role associated with the Sagemaker Service Integrations in `ModelTuningStateMachine` state machine.
+  # https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html#sagemaker-roles-createmodel-perms
+  SagemakerCreateModelAPIExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - !Ref AmazonSagemakerCWAccessPolicy
+        - !Ref AmazonSagemakerAmazonECRAccessPolicy
+        - !Ref AmazonSagemakerVPCAccessPolicy
+      Policies:
+        - PolicyName: AmazonSagemakerExecutionRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: 
+                  - 'arn:aws:s3:::*'
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # IAM Role associated with the `ExtractModelPathFromHPOLambda` function.
+  ExtractModelPathFromHPOLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: AmazonSagemakerExecutionRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:DescribeAlgorithm
+                Resource: 
+                  - !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:algorithm/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # A lambda function identifying the best model path and production variant.
+  ExtractModelPathFromHPOLambda:
+    Type: AWS::Serverless::Function
+    Properties: 
+      CodeUri: lambdas/extract-model-path
+      Description: >
+        A lambda function identifying the best model information 
+        and creating production variants.
+      Handler: index.lambda_handler
+      Role: !GetAtt ExtractModelPathFromHPOLambdaRole.Arn
+      Runtime: python3.8
+      Timeout: 10
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+
+  # An SNS topic on which operating failures will be sent.
+  FailureNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # The IAM role associated with the `ModelTuningStateMachine`.
+  ModelTuningStateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Policies:
+        - PolicyName: SageMakerCreateModelAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:CreateModel
+                  - sagemaker:ListTags
+                Resource:
+                  - !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:model/*'
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt SagemakerCreateModelAPIExecutionRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService:
+                        - sagemaker.amazonaws.com
+        - PolicyName: CloudWatchLogsDeliveryFullAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: '*'
+        - PolicyName: SageMakerTuningJobManagementFullAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:CreateHyperParameterTuningJob
+                  - sagemaker:DescribeHyperParameterTuningJob
+                  - sagemaker:StopHyperParameterTuningJob
+                  - sagemaker:ListTags
+                Resource:
+                  - !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:hyper-parameter-tuning-job/*'
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt SagemakerHyperparamerTuningExecutionRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService:
+                        - sagemaker.amazonaws.com
+              - Effect: Allow
+                Action:
+                  - sagemaker:CreateHyperParameterTuningJob
+                  - sagemaker:DescribeHyperParameterTuningJob
+                  - sagemaker:StopHyperParameterTuningJob
+                  - sagemaker:ListTags
+                  - events:PutTargets
+                  - events:PutRule
+                  - events:DescribeRule
+                Resource:
+                  - !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/StepFunctionsGetEventsForSageMakerTuningJobsRule'
+        - PolicyName: LambdaInvokeScopedAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt ExtractModelPathFromHPOLambda.Arn
+        - PolicyName: SnsPublishScopedAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Ref FailureNotificationTopic
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # AWS Step Functions CW Log Group.
+  ModelTuningStateMachineCWLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: ModelTuningStateMachineCWLogGroup
+      RetentionInDays: 60
+        
+  # The sagemaker model tuning state machine.
+  ModelTuningStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionSubstitutions:
+        StackName: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+        SagemakerHyperparamerTuningExecutionRoleArn: !GetAtt SagemakerHyperparamerTuningExecutionRole.Arn
+        ExtractModelPathFromHPOLambdaArn: !GetAtt ExtractModelPathFromHPOLambda.Arn
+        SagemakerCreateModelAPIExecutionRoleArn: !GetAtt SagemakerCreateModelAPIExecutionRole.Arn
+        FailureNotificationTopicArn: !Ref FailureNotificationTopic
+      DefinitionUri: state-machines/model-tuning.json
+      Logging:
+        Destinations: 
+          - CloudWatchLogsLogGroup: 
+              LogGroupArn: !GetAtt ModelTuningStateMachineCWLogGroup.Arn
+        IncludeExecutionData: true
+        Level: "ALL"
+      Name: ModelTuningStateMachine
+      Role: !GetAtt ModelTuningStateMachineRole.Arn
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+      Type: STANDARD
+
+# The outputs to be generated by this template.
+Outputs:
+  Name:
+    Description: >
+      Sagemaker Model Tuning Step Function Stack Name.
+    Value: !Ref AWS::StackName
+    Export:
+      Name: !Sub ${AWS::StackName}-Name
+  FailureNotificationTopicArn:
+    Description: >
+      Failed Notification Topic ARN.
+    Value: !Ref FailureNotificationTopic
+    Export:
+      Name: !Sub ${AWS::StackName}-FailureNotificationTopicArn
+  FailureNotificationTopicName:
+    Description: >
+      Failed Notification Topic Name.
+    Value: !GetAtt FailureNotificationTopic.TopicName
+    Export:
+      Name: !Sub ${AWS::StackName}-FailureNotificationTopicName
+  ModelTuningStateMachineArn:
+    Description: >
+      ARN for the AutoScaling Model Endpoint Deployment State Machine.
+    Value: !Ref ModelTuningStateMachine
+    Export:
+      Name: !Sub ${AWS::StackName}-ModelTuningStateMachineArn
+

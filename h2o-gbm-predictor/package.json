@@ -1,0 +1,53 @@
+{
+  "name": "@aws-blocks/h2o-gbm-predictor",
+  "version": "1.0.0",
+  "description": "🧠 An AWS Block to create a Sagemaker Model Inference Docker image for H2O GBM Predictor.",
+  "block": {
+    "type": "resource",
+    "audience": [
+      "Solutions Architects",
+      "Developers",
+      "Data Scientists"
+    ],
+    "releases": [
+      {
+        "version": "1.0.0",
+        "date": "2019-08-14T20:00:00+01:00",
+        "notes": [
+          {
+            "text": "Initial version release of the `h2o-gbm-predictor` package."
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/h2o-gbm-predictor"
+  },
+  "keywords": [
+    "machine-learning",
+    "h2o",
+    "sagemaker",
+    "java",
+    "model-hosting",
+    "docker"
+  ],
+  "author": "Anil Sener <senera@amazon.com>",
+  "license": "ASL",
+  "bugs": {
+    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+  },
+  "scripts": {
+    "build": "mvn clean package && docker build -t h2o-gbm-predictor . --build-arg build_mode=${npm_config_build_mode}",
+    "build-win": "mvn clean package && docker build -t h2o-gbm-predictor . --build-arg build_mode=%npm_config_build_mode%",
+    "clean": "mvn clean && docker rmi ${npm_config_accountid}.dkr.ecr.${npm_config_region}.amazonaws.com/h2o-gbm-predictor:latest",
+    "clean-win": "mvn clean && docker rmi %npm_config_accountid%.dkr.ecr.%npm_config_region%.amazonaws.com/h2o-gbm-predictor:latest",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-local": "npm run build --build_mode=local && docker run -p 8080:8080 --rm h2o-gbm-predictor:latest",
+    "test-local-win": "npm run build-win --build_mode=local && docker run -p 8080:8080 --rm h2o-gbm-predictor:latest",
+    "deploy": "npm run build --build_mode=aws && bash push_docker_image.sh h2o-gbm-predictor ${npm_config_region}",
+    "deploy-win": "npm run build-win --build_mode=aws && push_docker_image.bat h2o-gbm-predictor %npm_config_region%"
+  },
+  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/h2o-gbm-predictor"
+}

@@ -1,0 +1,348 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A parameter provider toolkit for Machine Learning Porcesses as a Cloudformation stack.
+
+# Metadata associated with this stack.
+Metadata:
+  # Cloudformation interface for parameters.
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+
+      # General parameters label.
+      - Label:
+          default: General Parameters
+        Parameters:
+          - Environment
+          - ParameterStorePath
+          - TargetStateMachineArn
+          - ManifestS3BucketName
+          - ManifestS3BucketKeyPrefix
+          - HyperparametersS3BucketName
+          - HyperparametersS3Key
+          - ParametersS3BucketName
+          - ParametersS3Key
+    
+    # Labels for the above parameters.
+    ParameterLabels:
+      Environment:
+        default: Environment name
+      ParameterStorePath:
+        default: ML Parameter Store Path
+      TargetStateMachineArn:
+        default: Target State Machine Arn
+      ManifestS3BucketName:
+        default: The name of the S3 bucket that holds the manifest json files
+      ManifestS3BucketKeyPrefix:
+        default: The Key prefix for the manifest json files in the S3 bucket  
+      HyperparametersS3BucketName:
+        default: The name of the S3 bucket that holds the hyperparameter json file
+      HyperparametersS3Key:
+        default: The Key for the hyperparameter json file in the S3 bucket 
+      ParametersS3BucketName:
+        default: The name of the S3 bucket that holds the ML Workflow parameter json file
+      ParametersS3Key:
+        default: The Key for the ML Workflow parameter json file in the S3 bucket
+
+# Parameters exposed by this template.
+Parameters:
+  # General parameters.
+  Environment:
+    Type: String
+    Description: >
+      The environment name on which you would like to deploy the project.
+      This identifier will be used to tag created resources.
+    Default: development
+    MinLength: 1
+    ConstraintDescription: The environment cannot be empty.
+  ParameterStorePath:
+    Type: String
+    Description: >
+      The ML Parameter Store Path to store all ML hyperparameters and other model training and host configurations for a project.
+    Default: /ml-project
+    MinLength: 1
+    ConstraintDescription: The ML Parameter Store Path cannot be empty.
+  TargetStateMachineArn:
+    Type: String
+    Description: >
+      Arn of Target State Machine to be invoked by the lambda.
+    MinLength: 1
+    AllowedPattern: "arn:aws:states:.*$"
+    ConstraintDescription: The Target State Machine Arn cannot be empty. Please set an ARN in this account & region.
+  ManifestS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name that contains the manifest json files to trigger ML workflows. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: "String"
+  ManifestS3BucketKeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: "Manifests bucket key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: "String"
+    Default: manifests/
+  HyperparametersS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name that contains the manifest json files to trigger ML workflows. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: "String"
+  HyperparametersS3Key:
+    AllowedPattern: "^[0-9a-zA-Z-/]*.json$"
+    ConstraintDescription: "Hyperparameters bucket key is a json file with a name that can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: "String"
+    Default: hyperparameters.json
+  ParametersS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name that contains the manifest json files to trigger ML workflows. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: "String"
+  ParametersS3Key:
+    AllowedPattern: "^[0-9a-zA-Z-/]*.json$"
+    ConstraintDescription: "ML Workflow parameters bucket key is a json file with a name that can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: "String"
+    Default: ml-parameters.json
+
+# Parameters exposed by this template.
+Resources: 
+  # Customer Managed Policy to Access Parameters in Systems Manager Parameter Store
+  AWSSystemsManagerParameterStoreReadonlyAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParametersByPath
+              - ssm:GetParameters
+              - ssm:GetParameter
+            Resource: 
+              - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterStorePath}*'
+  
+  # IAM Role associated with the `InvokeMLWorkflowStepFunctionLambda` function.
+  InvokeMLWorkflowStepFunctionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref AWSSystemsManagerParameterStoreReadonlyAccessPolicy
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AWSStepFunctionsInvocationPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource:
+                  - !Ref TargetStateMachineArn
+        - PolicyName: AmazonS3LambdaAccessPolicy 
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::${ManifestS3BucketName}"
+                  - !Sub "arn:aws:s3:::${ManifestS3BucketName}/${ManifestS3BucketKeyPrefix}*"
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # A lambda function which triggers Step Function Execution based on ML Parameter Store and manifest.json inputs.
+  InvokeMLWorkflowStepFunctionLambda:
+    Type: AWS::Serverless::Function
+    Properties: 
+      CodeUri: lambdas/invoke-step-function
+      Description: >
+        A lambda function triggered with a manifest json object on S3, 
+        which eventually triggers a ML Workflow State Machine composing 
+        the imputs of ML parameters and manifest json.
+      Handler: index.lambda_handler
+      Role: !GetAtt InvokeMLWorkflowStepFunctionLambdaRole.Arn
+      Runtime: python3.8
+      Timeout: 900
+      Environment:
+        Variables:
+          PARAM_STORE_PATH: !Ref ParameterStorePath
+          STATE_MACHINE_ARN: !Ref TargetStateMachineArn
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+
+  # Lambda Permission for S3 Event Trigger
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt InvokeMLWorkflowStepFunctionLambda.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${ManifestS3BucketName}'
+
+  # Lambda Execution IAM Role for 'S3TriggerCustomResourceLambda'
+  S3TriggerLambdaIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AmazonS3LambdaAccessPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetBucketNotification'
+                  - 's3:PutBucketNotification'
+                Resource: !Sub 'arn:aws:s3:::${ManifestS3BucketName}'
+  
+  # Adds S3 Notification Trigger
+  # https://aws.amazon.com/premiumsupport/knowledge-center/cloudformation-s3-notification-lambda/
+  S3TriggerCustomResourceLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: lambdas/s3-trigger-custom-resource
+      Handler: index.lambda_handler
+      Role: !GetAtt S3TriggerLambdaIAMRole.Arn
+      Runtime: python3.8
+      Timeout: 50
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+ 
+  # Executes S3 Trigger Custom Resource Lambda
+  DeploymentS3TriggerCustomResource:
+    Type: Custom::AppConfiguration
+    Properties:
+      ServiceToken: !GetAtt S3TriggerCustomResourceLambda.Arn
+      LambdaArn: !GetAtt InvokeMLWorkflowStepFunctionLambda.Arn
+      Bucket: !Ref ManifestS3BucketName
+      Prefix: !Ref ManifestS3BucketKeyPrefix
+      Suffix: .json
+
+  # Lambda Execution IAM Role for 'ParameterStoreCustomResourceLambda'
+  ParameterStoreIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref AWSSystemsManagerParameterStoreReadonlyAccessPolicy
+      Policies:
+        - PolicyName: AWSSystemsManagerParameterStoreModifyAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:PutParameter
+                  - ssm:AddTagsToResource
+                  - ssm:DeleteParameters
+                Resource: 
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterStorePath}/*'
+        - PolicyName: AmazonS3LambdaAccessPolicy 
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::${HyperparametersS3BucketName}"
+                  - !Sub "arn:aws:s3:::${HyperparametersS3BucketName}/${HyperparametersS3Key}"
+                  - !Sub "arn:aws:s3:::${ParametersS3BucketName}"
+                  - !Sub "arn:aws:s3:::${ParametersS3BucketName}/${ParametersS3Key}"
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Adds Parameter Store Deployment Custom Resource Lambda
+  ParameterStoreCustomResourceLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: lambdas/parameter-store
+      Handler: index.lambda_handler
+      Role: !GetAtt ParameterStoreIAMRole.Arn
+      Runtime: python3.8
+      Timeout: 900
+      Environment:
+        Variables:
+          PARAM_STORE_PATH: !Ref ParameterStorePath
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+ 
+  # Executes Parameter Store Custom Resource Lambda
+  DeploymentParameterStoreCustomResource:
+    Type: Custom::AppConfiguration
+    Properties:
+      ServiceToken: !GetAtt ParameterStoreCustomResourceLambda.Arn
+      Hyperparameters:
+        Bucket: !Ref HyperparametersS3BucketName
+        Key: !Ref HyperparametersS3Key
+      Parameters:
+        Bucket: !Ref ParametersS3BucketName
+        Key: !Ref ParametersS3Key
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+        
+# The outputs to be generated by this template.
+Outputs:
+  Name:
+    Description: >
+      ML Parameter Provider Stack Name.
+    Value: !Ref AWS::StackName
+    Export:
+      Name: !Sub ${AWS::StackName}-Name
+  InvokeMLWorkflowStepFunctionLambdaArn:
+    Description: >
+      ARN for the Invoke StepFunction Lambda.
+    Value: !Ref InvokeMLWorkflowStepFunctionLambda
+    Export:
+      Name: !Sub ${AWS::StackName}-InvokeMLWorkflowStepFunctionLambdaArn
+  S3TriggerCustomResourceLambdaArn:
+    Description: >
+      ARN for the S3 Trigger Custom Resource Lambda.
+    Value: !Ref S3TriggerCustomResourceLambda
+    Export:
+      Name: !Sub ${AWS::StackName}-S3TriggerCustomResourceLambdaArn
+  ParameterStoreCustomResourceLambdaArn:
+    Description: >
+      ARN for the Parameter Store Custom Resource Lambda.
+    Value: !Ref ParameterStoreCustomResourceLambda
+    Export:
+      Name: !Sub ${AWS::StackName}-ParameterStoreCustomResourceLambdaArn
+    
+

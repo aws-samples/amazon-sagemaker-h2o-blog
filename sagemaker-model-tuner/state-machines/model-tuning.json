@@ -1,0 +1,223 @@
+{
+"Comment": "Model Hyperparameter Tuning State Machine",
+"StartAt": "Start Model Tuning Job",
+"States": {
+    "Start Model Tuning Job": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::sagemaker:createHyperParameterTuningJob.sync",
+    "Parameters": {
+        "HyperParameterTuningJobConfig": {
+        "ResourceLimits": {
+            "MaxNumberOfTrainingJobs.$": "$.maxNumberOfTrainingJobs",
+            "MaxParallelTrainingJobs.$": "$.maxParallelTrainingJobs"
+        },
+        "Strategy.$": "$.tuningStrategy",
+        "TrainingJobEarlyStoppingType.$": "$.trainingJobEarlyStoppingType"
+        },
+        "HyperParameterTuningJobName.$": "$.tuningJobName",
+        "Tags": [
+        { 
+            "Key": "Name",
+            "Value": "${StackName}"
+        },
+        { 
+            "Key": "Environment",
+            "Value": "${Environment}"
+        }
+        ],
+        "TrainingJobDefinitions": [
+        {
+            "DefinitionName.$": "$.trainingJobDefinitionName",
+            "AlgorithmSpecification": {
+            "AlgorithmName.$": "$.algorithmARN",
+            "TrainingInputMode": "File"
+            },
+            "TuningObjective": {
+            "MetricName": "validation:auc",
+            "Type": "Maximize"
+            },
+            "HyperParameterRanges.$": "$.parameterRanges",
+            "RoleArn": "${SagemakerHyperparamerTuningExecutionRoleArn}",
+            "StaticHyperParameters.$": "$.staticHyperParameters",
+            "StoppingCondition": {
+            "MaxRuntimeInSeconds": 86400,
+            "MaxWaitTimeInSeconds": 86400
+            },
+            "CheckpointConfig": {
+            "S3Uri.$": "$.spotTrainingCheckpointS3Uri"
+            },
+            "EnableInterContainerTrafficEncryption": false,
+            "EnableManagedSpotTraining.$": "$.enableManagedSpotTraining",
+            "EnableNetworkIsolation": true,
+            "InputDataConfig": [
+            {
+                "ChannelName.$": "$.channels[0].channelName",
+                "CompressionType": "None",
+                "ContentType.$": "$.inputContentType",
+                "DataSource": {
+                "S3DataSource.$": "$.channels[0].s3DataSource"
+                },
+                "InputMode": "File",
+                "RecordWrapperType": "None",
+                "ShuffleConfig": {
+                "Seed": 1
+                }
+            },
+            {
+                "ChannelName.$": "$.channels[1].channelName",
+                "CompressionType": "None",
+                "ContentType.$": "$.inputContentType",
+                "DataSource": {
+                "S3DataSource.$": "$.channels[1].s3DataSource"
+                },
+                "InputMode": "File",
+                "RecordWrapperType": "None",
+                "ShuffleConfig": {
+                "Seed": 1
+                }
+            }
+            ],
+            "VpcConfig": {
+            "SecurityGroupIds.$": "$.model.trainingSecurityGroupIds",
+            "Subnets.$": "$.model.trainingSubnets"
+            },
+            "OutputDataConfig": {
+            "KmsKeyId": "",
+            "S3OutputPath.$": "$.model.artifactsS3OutputPath"
+            },
+            "ResourceConfig": {
+            "InstanceCount": 1,
+            "InstanceType.$": "$.trainingInstanceType",
+            "VolumeSizeInGB.$": "$.trainingInstanceVolumeSizeInGB"
+            }
+        }
+        ]
+    },
+    "Retry": [
+        {
+        "ErrorEquals": [
+            "SageMaker.AmazonSageMakerException"
+        ],
+        "IntervalSeconds": 10,
+        "MaxAttempts": 5,
+        "BackoffRate": 1.1
+        },
+        {
+        "ErrorEquals": [
+            "SageMaker.ResourceLimitExceededException"
+        ],
+        "IntervalSeconds": 60,
+        "MaxAttempts": 5,
+        "BackoffRate": 1.1
+        },
+        {
+        "ErrorEquals": [
+            "SageMaker.ResourceNotFoundException"
+        ],
+        "IntervalSeconds": 300,
+        "MaxAttempts": 5,
+        "BackoffRate": 1.1
+        },
+        {
+        "ErrorEquals": [
+            "States.Timeout"
+        ],
+        "IntervalSeconds": 60,
+        "MaxAttempts": 5,
+        "BackoffRate": 1
+        }
+    ],
+    "Catch": [
+        {
+        "ErrorEquals": [
+            "States.ALL"
+        ],
+        "ResultPath": "$.cause",
+        "Next": "Failure Notification"
+        }
+    ],
+    "ResultPath": "$.modelTraining",
+    "Next": "Extract Model Path"
+    },
+    "Extract Model Path": {
+    "Resource": "${ExtractModelPathFromHPOLambdaArn}",
+    "Type": "Task",
+    "Next": "Create Sagemaker Model Definition"
+    },
+    "Create Sagemaker Model Definition": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::sagemaker:createModel",
+    "Parameters": {
+        "ModelName.$": "$.model.name",
+        "PrimaryContainer": {
+        "Image.$": "$.model.hosting.inferenceImage",
+        "Environment": {
+            "MODEL_TYPE.$": "$.model.artifactType"
+        },
+        "ModelDataUrl.$": "$.bestModelDataUrl"
+        },
+        "ExecutionRoleArn": "${SagemakerCreateModelAPIExecutionRoleArn}",
+        "VpcConfig": {
+        "SecurityGroupIds.$": "$.model.hosting.securityGroupIds",
+        "Subnets.$": "$.model.hosting.subnets"
+        }
+    },
+    "Retry": [
+        {
+        "ErrorEquals": [
+            "SageMaker.AmazonSageMakerException"
+        ],
+        "IntervalSeconds": 1,
+        "MaxAttempts": 5,
+        "BackoffRate": 1.1
+        },
+        {
+        "ErrorEquals": [
+            "SageMaker.ResourceLimitExceededException"
+        ],
+        "IntervalSeconds": 60,
+        "MaxAttempts": 5,
+        "BackoffRate": 1
+        },
+        {
+        "ErrorEquals": [
+            "States.Timeout"
+        ],
+        "IntervalSeconds": 1,
+        "MaxAttempts": 5,
+        "BackoffRate": 1
+        }
+    ],
+    "Catch": [
+        {
+        "ErrorEquals": [
+            "States.ALL"
+        ],
+        "ResultPath": "$.cause",
+        "Next": "Failure Notification"
+        }
+    ],
+    "ResultPath": "$.modelDefinition",
+    "Next": "Success"
+    },
+    "Success": {
+    "Type": "Succeed"
+    },
+    "Failure Notification": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::sns:publish",
+    "Parameters": {
+        "TopicArn": "${FailureNotificationTopicArn}",
+        "Message.$": "$.cause",
+        "MessageStructure": "application/json",
+        "MessageAttributes": {}
+    },
+    "Next": "Fail"
+    },
+    "Fail": {
+    "Type": "Fail",
+    "Error": "Sagemaker Model Tuning Failure",
+    "Cause": "$.cause . Please check logs."
+    }
+}
+}

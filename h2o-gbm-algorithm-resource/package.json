@@ -1,0 +1,47 @@
+{
+  "name": "@aws-blocks/h2o-gbm-algorithm-resource",
+  "version": "1.0.0",
+  "description": "🔧 A Sagemaker Algorithm Resource for H2O Gradient Boosting Machines (GBM) as a Cloudformation stack.",
+  "block": {
+    "type": "basic-block",
+    "audience": [
+      "Solutions Architects",
+      "Developers",
+      "Data Scientists"
+    ],
+    "releases": [
+      {
+        "version": "1.0.0",
+        "date": "2020-08-12T19:00:00+01:00",
+        "notes": [
+          {
+            "text": "Initial version release of the `h2o-gbm-algorithm-resource` package."
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/h2o-gbm-algorithm-resource"
+  },
+  "keywords": [
+    "machine-learning",
+    "step-functions",
+    "sagemaker",
+    "serverless",
+    "algorithm-resource"
+  ],
+  "author": "Anil Sener <senera@amazon.com>",
+  "license": "ASL",
+  "bugs": {
+    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+  },
+  "scripts": {
+    "postinstall": "sam build --template-file cloudformation.yml",
+    "deploy": "npm run postinstall && sam deploy --stack-name h2o-gbm-algorithm-resource --region ${npm_config_region}  --s3-bucket ${npm_config_s3bucket} --capabilities CAPABILITY_IAM --parameter-overrides Environment=${npm_config_environment} TrainingImageURI=${npm_config_account_id}.dkr.ecr.${npm_config_region}.amazonaws.com/${npm_config_training_image_name} InferenceImageURI=${npm_config_account_id}.dkr.ecr.${npm_config_region}.amazonaws.com/${npm_config_inference_image_name}",
+    "deploy-win": "npm run postinstall && sam deploy --stack-name h2o-gbm-algorithm-resource --region %npm_config_region% --s3-bucket %npm_config_s3bucket% --capabilities CAPABILITY_IAM --parameter-overrides Environment=%npm_config_environment% TrainingImageURI=%npm_config_account_id%.dkr.ecr.%npm_config_region%.amazonaws.com/%npm_config_training_image_name% InferenceImageURI=%npm_config_account_id%.dkr.ecr.%npm_config_region%.amazonaws.com/%npm_config_inference_image_name%",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/h2o-gbm-algorithm-resource"
+}

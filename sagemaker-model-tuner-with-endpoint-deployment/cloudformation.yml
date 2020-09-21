@@ -1,0 +1,249 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A sagemaker model tuning & Auto-scaling model endpoint deployment step function as a Cloudformation stack.
+
+# Metadata associated with this stack.
+Metadata:
+
+  # Cloudformation interface for parameters.
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      # General parameters label.
+      - Label:
+          default: General Parameters
+        Parameters:
+          - Environment
+          - ParameterStorePath
+          - ManifestS3BucketName
+          - ManifestS3BucketKeyPrefix
+          - HyperparametersS3BucketName
+          - HyperparametersS3Key
+          - ParametersS3BucketName
+          - ParametersS3Key
+
+    # Labels for the above parameters.
+    ParameterLabels:
+      Environment:
+        default: Environment name
+      ParameterStorePath:
+        default: ML Parameter Store Path
+      ManifestS3BucketName:
+        default: The name of the S3 bucket that holds the manifest json files
+      ManifestS3BucketKeyPrefix:
+        default: The Key prefix for the manifest json files in the S3 bucket  
+      HyperparametersS3BucketName:
+        default: The name of the S3 bucket that holds the hyperparameter json file
+      HyperparametersS3Key:
+        default: The Key for the hyperparameter json file in the S3 bucket 
+      ParametersS3BucketName:
+        default: The name of the S3 bucket that holds the ML Workflow parameter json file
+      ParametersS3Key:
+        default: The Key for the ML Workflow parameter json file in the S3 bucket         
+
+# Parameters exposed by this template.
+Parameters:
+
+  # General parameters.
+  Environment:
+    Type: String
+    Description: >
+      The environment name on which you would like to deploy the project.
+      This identifier will be used to tag created resources.
+    Default: development
+    MinLength: 1
+    ConstraintDescription: The environment cannot be empty.
+  ParameterStorePath:
+    Type: String
+    Description: >
+      The ML Parameter Store Path to store all ML hyperparameters and other model training and host configurations for a project.
+    Default: /ml-project
+    MinLength: 1
+    ConstraintDescription: The ML Parameter Store Path cannot be empty.
+  ManifestS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name that contains the manifest json files to trigger ML workflows. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: "String"
+  ManifestS3BucketKeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: "Manifests bucket key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: "String"
+    Default: manifests/
+  HyperparametersS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name that contains the manifest json files to trigger ML workflows. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: "String"
+  HyperparametersS3Key:
+    AllowedPattern: "^[0-9a-zA-Z-/]*.json$"
+    ConstraintDescription: "Hyperparameters bucket key is a json file with a name that can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: "String"
+    Default: hyperparameters.json
+  ParametersS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name that contains the manifest json files to trigger ML workflows. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: "String"
+  ParametersS3Key:
+    AllowedPattern: "^[0-9a-zA-Z-/]*.json$"
+    ConstraintDescription: "ML Workflow parameters bucket key is a json file with a name that can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: "String"
+    Default: ml-parameters.json
+# Parameters exposed by this template.
+Resources:
+  
+  # Nested Serverless Application to deploy ModelTuningStateMachine 
+  ModelTuningApplication:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: node_modules/@aws-blocks/sagemaker-model-tuner/cloudformation.yml
+      TimeoutInMinutes: 10
+      Parameters:
+        Environment: !Ref Environment
+
+  # Nested Serverless Application to deploy AutoScalingModelEndpointDeploymentStateMachine 
+  AutoScalingModelEndpointDeploymentApplication:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: node_modules/@aws-blocks/sagemaker-endpoint-deployer/cloudformation.yml
+      TimeoutInMinutes: 10
+      Parameters:
+        Environment: !Ref Environment
+  
+  # The IAM role associated with the `ModelTuningWithEndpointDeploymentStateMachine`.
+  ModelTuningWithEndpointDeploymentStateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Policies:
+        - PolicyName: CloudWatchLogsDeliveryFullAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: '*'
+        - PolicyName: StepFunctionsStartExecutionManagementScopedAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource:
+                  - !Sub "${ModelTuningApplication.Outputs.ModelTuningStateMachineArn}"
+                  - !Sub "${AutoScalingModelEndpointDeploymentApplication.Outputs.AutoScalingModelEndpointDeploymentStateMachineArn}"
+              - Effect: Allow
+                Action:
+                  - states:DescribeExecution
+                  - states:StopExecution
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                  - events:PutTargets
+                  - events:PutRule
+                  - events:DescribeRule
+                Resource:
+                  - !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule"
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # AWS Step Functions CW Log Group.
+  ModelTuningWithEndpointDeploymentStateMachineCWLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: ModelTuningWithEndpointDeploymentStateMachineCWLogGroup
+      RetentionInDays: 60
+        
+  # The sagemaker model tuning state machine.
+  ModelTuningWithEndpointDeploymentStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionSubstitutions:
+        ModelTuningStateMachineArn: !GetAtt ModelTuningApplication.Outputs.ModelTuningStateMachineArn
+        AutoScalingModelEndpointDeploymentStateMachineArn: !GetAtt AutoScalingModelEndpointDeploymentApplication.Outputs.AutoScalingModelEndpointDeploymentStateMachineArn
+      DefinitionUri: state-machines/model-tuning-with-endpoint-deployment.json
+      Logging:
+        Destinations: 
+          - CloudWatchLogsLogGroup: 
+              LogGroupArn: !GetAtt ModelTuningWithEndpointDeploymentStateMachineCWLogGroup.Arn
+        IncludeExecutionData: true
+        Level: "ALL"
+      Name: ModelTuningWithEndpointDeploymentStateMachine
+      Role: !GetAtt ModelTuningWithEndpointDeploymentStateMachineRole.Arn
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+      Type: STANDARD
+
+  # Nested Serverless Application to deploy necessary Parameters to Systems Manager Parameter Store 
+  MLParameterProviderApplication:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: node_modules/@aws-blocks/ml-parameter-provider/packaged.yaml
+      TimeoutInMinutes: 10
+      Parameters:
+        Environment: !Ref Environment
+        ParameterStorePath: !Ref ParameterStorePath
+        TargetStateMachineArn: !Ref ModelTuningWithEndpointDeploymentStateMachine
+        ManifestS3BucketName: !Ref ManifestS3BucketName
+        ManifestS3BucketKeyPrefix: !Ref ManifestS3BucketKeyPrefix
+        HyperparametersS3BucketName: !Ref HyperparametersS3BucketName
+        HyperparametersS3Key: !Ref HyperparametersS3Key
+        ParametersS3BucketName: !Ref ParametersS3BucketName
+        ParametersS3Key: !Ref ParametersS3Key
+
+# The outputs to be generated by this template.
+Outputs:
+  Name:
+    Description: >
+      Sagemaker Model Tuning & AutoScaling Model Endpoint Deployment State Machine Step Function Stack Name.
+    Value: !Ref AWS::StackName
+    Export:
+      Name: !Sub ${AWS::StackName}-Name
+  ModelTuningWithEndpointDeploymentStateMachineArn:
+    Description: >
+      ARN for the Model Tuning & AutoScaling Model Endpoint Deployment State Machine.
+    Value: !Ref ModelTuningWithEndpointDeploymentStateMachine
+    Export:
+      Name: !Sub ${AWS::StackName}-ModelTuningWithEndpointDeploymentStateMachineArn
+  MLParameterProviderApplicationArn:
+    Description: >
+      ARN for the ML Parameter Provider Serverless Application.
+    Value: !Ref MLParameterProviderApplication
+    Export:
+      Name: !Sub ${AWS::StackName}-MLParameterProviderApplicationArn
+  ModelTuningApplicationArn:
+    Description: >
+      ARN for the Model Tuning Serverless Application.
+    Value: !Ref ModelTuningApplication
+    Export:
+      Name: !Sub ${AWS::StackName}-ModelTuningApplicationArn
+  AutoScalingModelEndpointDeploymentApplicationArn:
+    Description: >
+      ARN for the Auto-Scaling Model Endpoint Deployment Serverless Application.
+    Value: !Ref AutoScalingModelEndpointDeploymentApplication
+    Export:
+      Name: !Sub ${AWS::StackName}-AutoScalingModelEndpointDeploymentApplicationArn

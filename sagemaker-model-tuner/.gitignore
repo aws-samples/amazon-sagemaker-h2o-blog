@@ -1,0 +1,4 @@
+.aws-sam
+.aws-sam/*
+samconfig.toml
+npm-debug.log

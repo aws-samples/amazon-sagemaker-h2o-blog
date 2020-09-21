@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip3 install -vU setuptools --upgrade
+      - pip3 install cfn-lint --upgrade
+      - gem install cfn-nag
+      - git clone https://github.com/awslabs/git-secrets.git
+  build:
+    commands:
+      - cfn-lint -t cloudformation.yml
+      - cfn_nag_scan --input-path cloudformation.yml
+      - ./git-secrets/git-secrets --scan-history .

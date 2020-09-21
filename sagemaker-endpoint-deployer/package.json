@@ -1,0 +1,72 @@
+{
+  "version": "2.1.0",
+  "name": "@aws-blocks/sagemaker-endpoint-deployer",
+  "description": "🧠 An auto-scaling Sagemaker model endpoint deployment Serverless Application as a Cloudformation stack.",
+  "block": {
+    "type": "architecture",
+    "audience": [
+      "Solutions Architects",
+      "Developers",
+      "Data Scientists"
+    ],
+    "releases": [
+      {
+        "version": "2.1.0",
+        "date": "2019-07-07T20:00:00+01:00",
+        "notes": [
+          {
+            "text": "Fixed the endpoint configuration name parameter generation problem, whihc appears in case an endpoint exists."
+          },
+          {
+            "text": "Updated Readme documentation."
+          }
+        ]
+      },
+      {
+        "version": "2.0.0",
+        "date": "2019-06-11T20:00:00+01:00",
+        "notes": [
+          {
+            "text": "Converted to a SAM application."
+          },
+          {
+            "text": "CW Log Group is added and associated to `AutoScalingModelEndpointDeploymentStateMachine`."
+          }
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2019-03-03T22:00:00+01:00",
+        "notes": [
+          {
+            "text": "Initial version release of the `sagemaker-endpoint-deployer` package."
+          },
+          {
+            "text": "Added details on the structure of a block and on how to create one using this package as a model."
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/sagemaker-endpoint-deployer"
+  },
+  "keywords": [
+    "machine-learning",
+    "step-functions",
+    "sagemaker",
+    "serverless"
+  ],
+  "author": "Anil Sener <senera@amazon.com>",
+  "license": "ASL",
+  "bugs": {
+    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+  },
+  "scripts": {
+    "deploy": "npm run postinstall && sam deploy --guided",
+    "postinstall": "sam build --template-file cloudformation.yml",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/sagemaker-endpoint-deployer"
+}

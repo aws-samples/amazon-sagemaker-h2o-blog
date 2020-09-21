@@ -1,0 +1,54 @@
+{
+  "name": "@aws-blocks/sagemaker-model-tuner",
+  "version": "1.1.0",
+  "description": "🔧 A Sagemaker model hyper-parameter tuning serverless application as a Cloudformation stack.",
+  "block": {
+    "type": "architecture",
+    "audience": [
+      "Solutions Architects",
+      "Developers",
+      "Data Scientists"
+    ],
+    "releases": [
+      {
+        "version": "1.1.0",
+        "date": "2019-07-07T20:00:00+01:00",
+        "notes": [
+          {
+            "text": "Updated Readme documentation."
+          }
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2020-06-17T19:00:00+01:00",
+        "notes": [
+          {
+            "text": "Initial version release of the `sagemaker-model-tuner` package."
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/sagemaker-model-tuner"
+  },
+  "keywords": [
+    "machine-learning",
+    "step-functions",
+    "sagemaker",
+    "serverless"
+  ],
+  "author": "Anil Sener <senera@amazon.com>",
+  "license": "ASL",
+  "bugs": {
+    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+  },
+  "scripts": {
+    "deploy": "npm run postinstall && sam deploy --guided",
+    "postinstall": "sam build --template-file cloudformation.yml",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/sagemaker-model-tuner"
+}

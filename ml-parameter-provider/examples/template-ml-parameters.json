@@ -1,0 +1,51 @@
+{
+    "tuningJobName": "survival-tuning",
+    "tuningStrategy": "Bayesian",
+    "algorithmARN": "arn:aws:sagemaker:<region>:<account-id>:algorithm/h2o-gbm-algorithm",
+    "maxParallelTrainingJobs": 10,
+    "maxNumberOfTrainingJobs": 10,
+    "inputContentType": "text/csv",
+    "trainingJobDefinitionName": "training-job-def-0",
+    "enableManagedSpotTraining": true,
+    "spotTrainingCheckpointS3Uri": "s3://<bucket-name>/model-training-checkpoint/",
+    "trainingInstanceType": "ml.c5.2xlarge",
+    "trainingInstanceVolumeSizeInGB": 30,
+    "trainingJobEarlyStoppingType": "Auto",
+    "endpointName": "survival-endpoint",
+    "model": {
+        "artifactType": "MOJO",
+        "artifactsS3OutputPath": "s3://<bucket-name>/model-artifacts/",
+        "name": "survival-model",
+        "trainingSecurityGroupIds": [
+            "<security-group-1>"
+        ],
+        "trainingSubnets": [
+            "<subnet-1>",
+            "<subnet-2>",
+            "<subnet-3>"
+        ],
+        "hosting": {
+            "initialInstanceCount": "1",
+            "instanceType": "ml.c5.2xlarge",
+            "securityGroupIds": [
+                "<security-group-1>"
+            ],
+            "subnets": [
+                "<subnet-1>",
+            	   "<subnet-2>",
+            	   "<subnet-3>"
+            ]
+        }
+    },
+    "autoscalingMinCapacity": 1,
+    "autoscalingMaxCapacity": 4,
+    "targetTrackingScalingPolicyConfiguration": {
+        "DisableScaleIn": true,
+        "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "SageMakerVariantInvocationsPerInstance"
+        },
+        "ScaleInCooldown": 300,
+        "ScaleOutCooldown": 60,
+        "TargetValue": 5000
+    }
+}

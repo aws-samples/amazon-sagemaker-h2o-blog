@@ -1,0 +1,8 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - git clone https://github.com/awslabs/git-secrets.git
+  build:
+    commands:
+      - ./git-secrets/git-secrets --scan-history .

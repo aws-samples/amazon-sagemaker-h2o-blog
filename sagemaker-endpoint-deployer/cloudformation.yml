@@ -1,0 +1,283 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  An auto-scaling Sagemaker model endpoint deployment step function as a Cloudformation stack.
+
+# Metadata associated with this stack.
+Metadata:
+
+  # Cloudformation interface for parameters.
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+
+      # General parameters label.
+      - Label:
+          default: General Parameters
+        Parameters:
+          - Environment
+
+    # Labels for the above parameters.
+    ParameterLabels:
+      Environment:
+        default: Environment name
+
+# Parameters exposed by this template.
+Parameters:
+
+  # General parameters.
+  Environment:
+    Type: String
+    Description: >
+      The environment name on which you would like to deploy the project.
+      This identifier will be used to tag created resources.
+    Default: development
+    MinLength: 1
+    ConstraintDescription: The environment cannot be empty.
+  
+# Parameters exposed by this template.
+Resources:
+
+  # IAM Role associated with the `CheckActiveEndpointInstanceCountLambda` function.
+  CheckActiveEndpointInstanceCountLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SagemakerModelEndpointAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:DescribeEndpoint
+                Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # A lambda function identifying the number of active model endpoint instances.
+  CheckActiveEndpointInstanceCountLambda:
+    Type: AWS::Serverless::Function
+    Properties: 
+      CodeUri: lambdas/check-active-endpoint-instance-count
+      Description: >
+        A lambda function identifying the number of active model endpoint instances.
+      Handler: index.lambda_handler
+      Role: !GetAtt CheckActiveEndpointInstanceCountLambdaRole.Arn
+      Runtime: python3.8
+      Timeout: 30
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+
+  # IAM Role associated with the `UpdateModelEndpointAutoScalingLambda` function.
+  UpdateModelEndpointAutoScalingLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AWSApplicationAutoScalingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - application-autoscaling:RegisterScalableTarget
+                  - application-autoscaling:DescribeScalableTargets
+                  - application-autoscaling:DeregisterScalableTarget
+                  - application-autoscaling:PutScalingPolicy
+                  - application-autoscaling:DescribeScalingPolicies
+                  - application-autoscaling:DescribeScalingActivities
+                  - application-autoscaling:DeleteScalingPolicy
+                  - cloudwatch:PutMetricAlarm
+                  - cloudwatch:DeleteAlarms
+                  - sagemaker:DescribeEndpointConfig
+                  - cloudwatch:DescribeAlarms
+                  - sagemaker:UpdateEndpointWeightsAndCapacities
+                  - iam:CreateServiceLinkedRole
+                Resource: '*'
+        - PolicyName: SagemakerModelEndpointAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:DescribeEndpoint
+                Resource: !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint/*'
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # A Lambda function updating model endpoint with automatic scaling policies.
+  UpdateModelEndpointAutoScalingLambda:
+    Type: AWS::Serverless::Function
+    Properties: 
+      CodeUri: lambdas/update-model-endpoint-auto-scaling
+      Description: >
+        A Lambda function updating model endpoint with automatic scaling policies.
+      Handler: index.lambda_handler
+      Role: !GetAtt UpdateModelEndpointAutoScalingLambdaRole.Arn
+      Runtime: python3.8
+      Timeout: 30
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+
+  # An SNS topic on which operating failures will be sent.
+  FailureNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # The IAM role associated with the `AutoScalingModelEndpointDeploymentStateMachine`.
+  AutoScalingModelEndpointDeploymentStateMachineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com 
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Policies:
+        - PolicyName: SageMakerCreateEndpointFullAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:CreateEndpoint
+                  - sagemaker:UpdateEndpoint
+                  - sagemaker:CreateEndpointConfig
+                  - sagemaker:ListTags
+                Resource:
+                  - !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint/*'
+                  - !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint-config/*'
+        - PolicyName: LambdaInvokeScopedAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt CheckActiveEndpointInstanceCountLambda.Arn
+                  - !GetAtt UpdateModelEndpointAutoScalingLambda.Arn
+        - PolicyName: SnsPublishScopedAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Ref FailureNotificationTopic
+        - PolicyName: CloudWatchLogsDeliveryFullAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # AWS Step Functions CW Log Group.
+  ModelEndpointDeploymenStateMachineCWLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: ModelEndpointDeploymenStateMachineCWLogGroup
+      RetentionInDays: 60
+  
+  # The auto-scaling model endpoint deployment state machine.
+  AutoScalingModelEndpointDeploymentStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionSubstitutions:
+        StackName: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+        CheckActiveEndpointInstanceCountLambdaArn: !GetAtt CheckActiveEndpointInstanceCountLambda.Arn
+        UpdateModelEndpointAutoScalingLambdaArn: !GetAtt UpdateModelEndpointAutoScalingLambda.Arn
+        FailureNotificationTopicArn: !Ref FailureNotificationTopic
+      DefinitionUri: state-machines/model-deployment.json
+      Logging:
+        Destinations: 
+          - CloudWatchLogsLogGroup: 
+              LogGroupArn: !GetAtt ModelEndpointDeploymenStateMachineCWLogGroup.Arn
+        IncludeExecutionData: true
+        Level: "ALL"
+      Name: AutoScalingModelEndpointDeploymentStateMachine
+      Role: !GetAtt AutoScalingModelEndpointDeploymentStateMachineRole.Arn
+      Tags: 
+        Name: !Ref "AWS::StackName"
+        Environment: !Ref Environment
+      Type: STANDARD
+
+# The outputs to be generated by this template.
+Outputs:
+  Name:
+    Description: >
+      Sagemaker Autoscaling Endpoint Step Function Stack Name.
+    Value: !Ref AWS::StackName
+    Export:
+      Name: !Sub ${AWS::StackName}-Name
+  FailureNotificationTopicArn:
+    Description: >
+      Failed Notification Topic ARN.
+    Value: !Ref FailureNotificationTopic
+    Export:
+      Name: !Sub ${AWS::StackName}-FailureNotificationTopicArn
+  FailureNotificationTopicName:
+    Description: >
+      Failed Notification Topic Name.
+    Value: !GetAtt FailureNotificationTopic.TopicName
+    Export:
+      Name: !Sub ${AWS::StackName}-FailureNotificationTopicName
+  AutoScalingModelEndpointDeploymentStateMachineArn:
+    Description: >
+      ARN for the AutoScaling Model Endpoint Deployment State Machine.
+    Value: !Ref AutoScalingModelEndpointDeploymentStateMachine
+    Export:
+      Name: !Sub ${AWS::StackName}-AutoScalingModelEndpointDeploymentStateMachineArn
+

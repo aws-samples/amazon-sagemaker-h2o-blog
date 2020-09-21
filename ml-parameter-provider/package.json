@@ -1,0 +1,68 @@
+{
+  "name": "@aws-blocks/ml-parameter-provider",
+  "version": "1.1.0",
+  "description": "🧠 A Parameter Management Toolkit for ML Workloads as a Cloudformation stack.",
+  "block": {
+    "type": "architecture",
+    "audience": [
+      "Solutions Architects",
+      "Developers",
+      "Data Scientists"
+    ],
+    "releases": [
+      {
+        "version": "1.1.0",
+        "date": "2020-07-17T22:00:00+01:00",
+        "notes": [
+          {
+            "text": "Timestamp postfix in the end of Sagemaker Endpoint Name is removed."
+          },
+          {
+            "text": "Upgraded python version to 3.8 for all lambdas."
+          },
+          {
+            "text": "Removed condition for update stack operation."
+          },
+          {
+            "text": "Updated the Readme documentation."
+          }
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2019-03-03T22:00:00+01:00",
+        "notes": [
+          {
+            "text": "Initial version release of the `ml-parameter-provider` package."
+          },
+          {
+            "text": "Added details on the structure of a block and on how to create one using this package as a model."
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/ml-parameter-provider"
+  },
+  "keywords": [
+    "machine-learning",
+    "serverless",
+    "configuration-management",
+    "parameter-store",
+    "step-functions",
+    "sagemaker"
+  ],
+  "author": "Anil Sener <senera@amazon.com>",
+  "license": "ASL",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "sam build --template-file cloudformation.yml",
+    "deploy": "npm run postinstall && sam deploy --guided"
+  },
+  "bugs": {
+    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+  },
+  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/ml-parameter-provider"
+}

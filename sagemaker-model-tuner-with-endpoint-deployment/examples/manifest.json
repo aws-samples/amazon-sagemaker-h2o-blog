@@ -1,0 +1,22 @@
+{
+    "channels": [
+      {
+        "channelName": "training",
+        "s3DataSource": {
+          "AttributeNames": [],
+          "S3DataDistributionType": "FullyReplicated",
+          "S3DataType": "S3Prefix",
+          "S3Uri": "s3://<s3bucket>/titanic/training/train.csv"
+        }
+      },
+      {
+        "channelName": "validation",
+        "s3DataSource": {
+          "AttributeNames": [],
+          "S3DataDistributionType": "FullyReplicated",
+          "S3DataType": "S3Prefix",
+          "S3Uri": "s3://<s3bucket>/titanic/validation/validation.csv"
+        }
+      }
+    ]
+  }

@@ -1,0 +1,54 @@
+{
+  "name": "@aws-blocks/h2o-gbm-trainer",
+  "version": "1.0.0",
+  "description": "🧠 An AWS Block to create a Sagemaker Model Training Docker image for H2O GBM Estimator.",
+  "block": {
+    "type": "resource",
+    "audience": [
+      "Solutions Architects",
+      "Developers",
+      "Data Scientists"
+    ],
+    "releases": [
+      {
+        "version": "1.0.0",
+        "date": "2019-08-14T20:00:00+01:00",
+        "notes": [
+          {
+            "text": "Initial version release of the `h2o-gbm-trainer` package."
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/h2o-gbm-trainer"
+  },
+  "keywords": [
+    "machine-learning",
+    "h2o",
+    "sagemaker",
+    "algorithm",
+    "python",
+    "model-training",
+    "docker"
+  ],
+  "author": "Anil Sener <senera@amazon.com>",
+  "license": "ASL",
+  "bugs": {
+    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+  },
+  "scripts": {
+    "build": "chmod +x gbm_scripts/train && docker build -t h2o-gbm-trainer . --build-arg build_mode=${npm_config_build_mode}",
+    "build-win": "docker build -t h2o-gbm-trainer . --build-arg build_mode=%npm_config_build_mode%",
+    "clean": "docker rmi ${npm_config_accountid}.dkr.ecr.${npm_config_region}.amazonaws.com/h2o-gbm-trainer:latest",
+    "clean-win": "docker rmi %npm_config_accountid%.dkr.ecr.%npm_config_region%.amazonaws.com/h2o-gbm-trainer:latest",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-local": "npm run build --build_mode=local && docker run --rm h2o-gbm-trainer:latest train",
+    "test-local-win": "npm run build-win --build_mode=local && docker run --rm h2o-gbm-trainer:latest train",
+    "deploy": "npm run build --build_mode=aws && bash push_docker_image.sh h2o-gbm-trainer ${npm_config_region}",
+    "deploy-win": "npm run build-win --build_mode=aws && push_docker_image.bat h2o-gbm-trainer %npm_config_region%"
+  },
+  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/h2o-gbm-trainer"
+}

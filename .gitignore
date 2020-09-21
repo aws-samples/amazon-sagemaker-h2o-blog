@@ -1,0 +1,7 @@
+.git
+.git/
+*node_modules/*
+*node_modules
+*.aws
+*.aws/
+*package.yml

@@ -1,0 +1,60 @@
+{
+"parameterRanges": {
+    "IntegerParameterRanges": [
+        {
+        "Name": "ntrees",
+        "MinValue": "10",
+        "MaxValue": "100",
+        "ScalingType": "Linear"
+        },
+        {
+        "Name": "min_rows",
+        "MinValue": "10",
+        "MaxValue": "30",
+        "ScalingType": "Linear"
+        },
+        {
+        "Name": "max_depth",
+        "MinValue": "3",
+        "MaxValue": "7",
+        "ScalingType": "Linear"
+        },
+        {
+        "Name": "score_tree_interval",
+        "MinValue": "5",
+        "MaxValue": "10",
+        "ScalingType": "Linear"
+        }
+    ],
+    "ContinuousParameterRanges": [
+        {
+        "Name": "learn_rate",
+        "MinValue": "0.001",
+        "MaxValue": "0.01",
+        "ScalingType": "Logarithmic"
+        },
+        {
+        "Name": "sample_rate",
+        "MinValue": "0.6",
+        "MaxValue": "1.0",
+        "ScalingType": "Auto"
+        },
+        {
+        "Name": "col_sample_rate",
+        "MinValue": "0.7",
+        "MaxValue": "0.9",
+        "ScalingType": "Auto"
+        }
+    ],
+    "CategoricalParameterRanges": []
+    },
+    "staticHyperParameters":{
+        "stopping_metric": "auc",
+        "training": "{'classification': 'true', 'target': 'Survived', 'distribution':'bernoulli','ignored_columns':'PassengerId,Name,Cabin,Ticket','categorical_columns':'Sex,Embarked,Survived,Pclass,Embarked'}",
+        "balance_classes": "True",
+        "seed": "1",
+        "stopping_rounds": "10",
+        "stopping_tolerance": "1e-9"
+    }
+}
+    
