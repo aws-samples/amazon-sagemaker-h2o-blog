@@ -1,79 +1,79 @@
 {
-"Comment": "Model Hyperparameter Tuning & Endpoint Deployment State Machine",
-"StartAt": "Model Tuning Job",
-"States": {
-    "Model Tuning Job": {
-    "Type": "Task",
-    "Resource": "arn:aws:states:::states:startExecution.sync:2",
-    "Parameters": {
-        "Input": {
-        "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
-        "tuningJobName.$": "$.tuningJobName",
-        "tuningStrategy.$": "$.tuningStrategy",
-        "parameterRanges.$": "$.parameterRanges",
-        "maxNumberOfTrainingJobs.$": "$.maxNumberOfTrainingJobs",
-        "maxParallelTrainingJobs.$": "$.maxParallelTrainingJobs",
-        "trainingJobDefinitionName.$": "$.trainingJobDefinitionName",
-        "algorithmARN.$": "$.algorithmARN",
-        "trainingJobEarlyStoppingType.$": "$.trainingJobEarlyStoppingType",
-        "enableManagedSpotTraining.$": "$.enableManagedSpotTraining",
-        "spotTrainingCheckpointS3Uri.$": "$.spotTrainingCheckpointS3Uri",
-        "inputContentType.$": "$.inputContentType",
-        "trainingInstanceType.$": "$.trainingInstanceType",
-        "trainingInstanceVolumeSizeInGB.$": "$.trainingInstanceVolumeSizeInGB",
-        "channels.$": "$.channels",
-        "staticHyperParameters.$": "$.staticHyperParameters",
-        "model.$": "$.model"
+    "Comment": "Model Hyperparameter Tuning & Endpoint Deployment State Machine",
+    "StartAt": "Model Tuning Job",
+    "States": {
+      "Model Tuning Job": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+        "Parameters": {
+          "Input": {
+            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
+            "tuningJobName.$": "$.tuningJobName",
+            "tuningStrategy.$": "$.tuningStrategy",
+            "parameterRanges.$": "$.parameterRanges",
+            "maxNumberOfTrainingJobs.$": "$.maxNumberOfTrainingJobs",
+            "maxParallelTrainingJobs.$": "$.maxParallelTrainingJobs",
+            "trainingJobDefinitionName.$": "$.trainingJobDefinitionName",
+            "algorithmARN.$": "$.algorithmARN",
+            "trainingJobEarlyStoppingType.$": "$.trainingJobEarlyStoppingType",
+            "enableManagedSpotTraining.$": "$.enableManagedSpotTraining",
+            "spotTrainingCheckpointS3Uri.$": "$.spotTrainingCheckpointS3Uri",
+            "inputContentType.$": "$.inputContentType",
+            "trainingInstanceType.$": "$.trainingInstanceType",
+            "trainingInstanceVolumeSizeInGB.$": "$.trainingInstanceVolumeSizeInGB",
+            "channels.$": "$.channels",
+            "staticHyperParameters.$": "$.staticHyperParameters",
+            "model.$": "$.model"
+          },
+          "StateMachineArn": "${ModelTuningStateMachineArn}",
+          "Name.$": "$$.Execution.Name"
         },
-        "StateMachineArn": "${ModelTuningStateMachineArn}",
-        "Name.$": "$$.Execution.Name"
-    },
-    "Catch": [
-        {
-        "ErrorEquals": [
-            "States.ALL"
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "ResultPath": "$.cause",
+            "Next": "Fail"
+          }
         ],
-        "ResultPath": "$.cause",
-        "Next": "Fail"
-        }
-    ],
-    "ResultPath": "$.modelTuningSfn",
-    "Next": "Deploy AutoScaling Model Endpoint"
-    },
-    "Deploy AutoScaling Model Endpoint": {
-    "Type": "Task",
-    "Resource": "arn:aws:states:::states:startExecution.sync:2",
-    "Parameters": {
-        "Input": {
-        "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
-        "endpointName.$": "$.endpointName",
-        "productionVariants.$": "$.modelTuningSfn.Output.productionVariants",
-        "autoscalingMinCapacity.$": "$.autoscalingMinCapacity",
-        "autoscalingMaxCapacity.$": "$.autoscalingMaxCapacity",
-        "targetTrackingScalingPolicyConfiguration.$": "$.targetTrackingScalingPolicyConfiguration"
+        "ResultPath": "$.modelTuningSfn",
+        "Next": "Deploy AutoScaling Model Endpoint"
+      },
+      "Deploy AutoScaling Model Endpoint": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+        "Parameters": {
+          "Input": {
+            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
+            "endpointName.$": "$.endpointName",
+            "productionVariants.$": "$.modelTuningSfn.Output.productionVariants",
+            "autoscalingMinCapacity.$": "$.autoscalingMinCapacity",
+            "autoscalingMaxCapacity.$": "$.autoscalingMaxCapacity",
+            "targetTrackingScalingPolicyConfiguration.$": "$.targetTrackingScalingPolicyConfiguration"
+          },
+          "StateMachineArn": "${AutoScalingModelEndpointDeploymentStateMachineArn}",
+          "Name.$": "$$.Execution.Name"
         },
-        "StateMachineArn": "${AutoScalingModelEndpointDeploymentStateMachineArn}",
-        "Name.$": "$$.Execution.Name"
-    },
-    "Catch": [
-        {
-        "ErrorEquals": [
-            "States.ALL"
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "ResultPath": "$.cause",
+            "Next": "Fail"
+          }
         ],
-        "ResultPath": "$.cause",
-        "Next": "Fail"
-        }
-    ],
-    "ResultPath": "$.modelDeploymentSfn",
-    "Next": "Success"
-    },
-    "Success": {
-    "Type": "Succeed"
-    },
-    "Fail": {
-    "Type": "Fail",
-    "Error": "Model tuning or model deployment failure",
-    "Cause": "$.cause . Please check logs."
+        "ResultPath": "$.modelDeploymentSfn",
+        "Next": "Success"
+      },
+      "Success": {
+        "Type": "Succeed"
+      },
+      "Fail": {
+        "Type": "Fail",
+        "Error": "Model tuning or model deployment failure",
+        "Cause": "$.cause . Please check logs."
+      }
     }
-}
 }

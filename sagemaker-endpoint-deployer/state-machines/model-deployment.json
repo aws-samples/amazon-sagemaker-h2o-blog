@@ -1,205 +1,204 @@
 {
-"Comment": "Auto-scaling Endpoint Deployment State Machine",
-"StartAt": "Check Running Endpoint Instance Count",
-"States": {
-    "Check Running Endpoint Instance Count": {
-    "Resource": "${CheckActiveEndpointInstanceCountLambdaArn}",
-    "Type": "Task",
-    "Next": "Create Sagemaker Model Endpoint Configuration"
-    },
-    "Create Sagemaker Model Endpoint Configuration": {
-    "Type": "Task",
-    "Resource": "arn:aws:states:::sagemaker:createEndpointConfig",
-    "Parameters": {
-        "EndpointConfigName.$": "$.endpointConfigName",
-        "ProductionVariants.$": "$.productionVariants",
-        "Tags": []
-    },
-
-    "Retry": [
-        {
-        "ErrorEquals": [
-            "SageMaker.AmazonSageMakerException"
-        ],
-        "IntervalSeconds": 1,
-        "MaxAttempts": 5,
-        "BackoffRate": 1.1
+    "Comment": "Auto-scaling Endpoint Deployment State Machine",
+    "StartAt": "Check Running Endpoint Instance Count",
+    "States": {
+      "Check Running Endpoint Instance Count": {
+        "Resource": "${CheckActiveEndpointInstanceCountLambdaArn}",
+        "Type": "Task",
+        "Next": "Create Sagemaker Model Endpoint Configuration"
+      },
+      "Create Sagemaker Model Endpoint Configuration": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sagemaker:createEndpointConfig",
+        "Parameters": {
+          "EndpointConfigName.$": "$.endpointConfigName",
+          "ProductionVariants.$": "$.productionVariants",
+          "Tags": []
         },
-        {
-        "ErrorEquals": [
-            "SageMaker.ResourceLimitExceededException"
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "SageMaker.AmazonSageMakerException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 5,
+            "BackoffRate": 1.1
+          },
+          {
+            "ErrorEquals": [
+              "SageMaker.ResourceLimitExceededException"
+            ],
+            "IntervalSeconds": 60,
+            "MaxAttempts": 5,
+            "BackoffRate": 1
+          },
+          {
+            "ErrorEquals": [
+              "States.Timeout"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 5,
+            "BackoffRate": 1
+          }
         ],
-        "IntervalSeconds": 60,
-        "MaxAttempts": 5,
-        "BackoffRate": 1
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "ResultPath": "$.cause",
+            "Next": "Failure Notification"
+          }
+        ],
+        "ResultPath": "$.modelEndpointConfig",
+        "Next": "Does Endpoint Exist?"
+      },
+      "Does Endpoint Exist?": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.endpointExists",
+            "StringEquals": "false",
+            "Next": "Create Sagemaker Model Endpoint"
+          }
+        ],
+        "Default": "Update Sagemaker Model Endpoint"
+      },
+      "Update Sagemaker Model Endpoint": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sagemaker:updateEndpoint",
+        "Parameters": {
+          "EndpointConfigName.$": "$.endpointConfigName",
+          "EndpointName.$": "$.endpointName"
         },
-        {
-        "ErrorEquals": [
-            "States.Timeout"
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "SageMaker.AmazonSageMakerException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 5,
+            "BackoffRate": 1.1
+          },
+          {
+            "ErrorEquals": [
+              "SageMaker.ResourceLimitExceededException"
+            ],
+            "IntervalSeconds": 60,
+            "MaxAttempts": 5,
+            "BackoffRate": 1
+          },
+          {
+            "ErrorEquals": [
+              "States.Timeout"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 5,
+            "BackoffRate": 1
+          }
         ],
-        "IntervalSeconds": 1,
-        "MaxAttempts": 5,
-        "BackoffRate": 1
-        }
-    ],
-    "Catch": [
-        {
-        "ErrorEquals": [
-            "States.ALL"
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "ResultPath": "$.cause",
+            "Next": "Failure Notification"
+          }
         ],
-        "ResultPath": "$.cause",
-        "Next": "Failure Notification"
-        }
-    ],
-    "ResultPath": "$.modelEndpointConfig",
-    "Next": "Does Endpoint Exist?"
-    },
-    "Does Endpoint Exist?": {
-    "Type": "Choice",
-    "Choices": [
-        {
-        "Variable": "$.endpointExists",
-        "StringEquals": "false",
-        "Next": "Create Sagemaker Model Endpoint"
-        }
-    ],
-    "Default": "Update Sagemaker Model Endpoint"
-    },
-    "Update Sagemaker Model Endpoint": {
-    "Type": "Task",
-    "Resource": "arn:aws:states:::sagemaker:updateEndpoint",
-    "Parameters": {
-        "EndpointConfigName.$": "$.endpointConfigName",
-        "EndpointName.$": "$.endpointName"
-    },
-    "Retry": [
-        {
-        "ErrorEquals": [
-            "SageMaker.AmazonSageMakerException"
-        ],
-        "IntervalSeconds": 1,
-        "MaxAttempts": 5,
-        "BackoffRate": 1.1
+        "ResultPath": "$.modelEndpoint",
+        "Next": "Update Model Endpoint Auto-Scaling"
+      },
+      "Create Sagemaker Model Endpoint": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sagemaker:createEndpoint",
+        "Parameters": {
+          "EndpointConfigName.$": "$.endpointConfigName",
+          "EndpointName.$": "$.endpointName",
+          "Tags": []
         },
-        {
-        "ErrorEquals": [
-            "SageMaker.ResourceLimitExceededException"
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "SageMaker.AmazonSageMakerException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 5,
+            "BackoffRate": 1.1
+          },
+          {
+            "ErrorEquals": [
+              "SageMaker.ResourceLimitExceededException"
+            ],
+            "IntervalSeconds": 60,
+            "MaxAttempts": 5,
+            "BackoffRate": 1
+          },
+          {
+            "ErrorEquals": [
+              "States.Timeout"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 5,
+            "BackoffRate": 1
+          }
         ],
-        "IntervalSeconds": 60,
-        "MaxAttempts": 5,
-        "BackoffRate": 1
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "ResultPath": "$.cause",
+            "Next": "Failure Notification"
+          }
+        ],
+        "ResultPath": "$.modelEndpoint",
+        "Next": "Update Model Endpoint Auto-Scaling"
+      },
+      "Update Model Endpoint Auto-Scaling": {
+        "Resource": "${UpdateModelEndpointAutoScalingLambdaArn}",
+        "Type": "Task",
+        "Next": "Is Endpoint Running?"
+      },
+      "Is Endpoint Running?": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.endpointStatus",
+            "StringEquals": "InService",
+            "Next": "Success"
+          },
+          {
+            "Variable": "$.endpointStatus",
+            "StringEquals": "Creating",
+            "Next": "Wait For Endpoint Creation"
+          }
+        ],
+        "Default": "Fail"
+      },
+      "Wait For Endpoint Creation": {
+        "Type": "Wait",
+        "Seconds": 60,
+        "Next": "Update Model Endpoint Auto-Scaling"
+      },
+      "Success": {
+        "Type": "Succeed"
+      },
+      "Failure Notification": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::sns:publish",
+        "Parameters": {
+          "TopicArn": "${FailureNotificationTopicArn}",
+          "Message.$": "$.cause",
+          "MessageStructure": "application/json",
+          "MessageAttributes": {}
         },
-        {
-        "ErrorEquals": [
-            "States.Timeout"
-        ],
-        "IntervalSeconds": 1,
-        "MaxAttempts": 5,
-        "BackoffRate": 1
-        }
-    ],
-    "Catch": [
-        {
-        "ErrorEquals": [
-            "States.ALL"
-        ],
-        "ResultPath": "$.cause",
-        "Next": "Failure Notification"
-        }
-    ],
-    "ResultPath": "$.modelEndpoint",
-    "Next": "Update Model Endpoint Auto-Scaling"
-    },
-    "Create Sagemaker Model Endpoint": {
-    "Type": "Task",
-    "Resource": "arn:aws:states:::sagemaker:createEndpoint",
-    "Parameters": {
-        "EndpointConfigName.$": "$.endpointConfigName",
-        "EndpointName.$": "$.endpointName",
-        "Tags": []
-    },
-    "Retry": [
-        {
-        "ErrorEquals": [
-            "SageMaker.AmazonSageMakerException"
-        ],
-        "IntervalSeconds": 1,
-        "MaxAttempts": 5,
-        "BackoffRate": 1.1
-        },
-        {
-        "ErrorEquals": [
-            "SageMaker.ResourceLimitExceededException"
-        ],
-        "IntervalSeconds": 60,
-        "MaxAttempts": 5,
-        "BackoffRate": 1
-        },
-        {
-        "ErrorEquals": [
-            "States.Timeout"
-        ],
-        "IntervalSeconds": 1,
-        "MaxAttempts": 5,
-        "BackoffRate": 1
-        }
-    ],
-    "Catch": [
-        {
-        "ErrorEquals": [
-            "States.ALL"
-        ],
-        "ResultPath": "$.cause",
-        "Next": "Failure Notification"
-        }
-    ],
-    "ResultPath": "$.modelEndpoint",
-    "Next": "Update Model Endpoint Auto-Scaling"
-    },
-    "Update Model Endpoint Auto-Scaling": {
-    "Resource": "${UpdateModelEndpointAutoScalingLambdaArn}",
-    "Type": "Task",
-    "Next": "Is Endpoint Running?"
-    },
-    "Is Endpoint Running?": {
-    "Type": "Choice",
-    "Choices": [
-        {
-        "Variable": "$.endpointStatus",
-        "StringEquals": "InService",
-        "Next": "Success"
-        },
-        {
-        "Variable": "$.endpointStatus",
-        "StringEquals": "Creating",
-        "Next": "Wait For Endpoint Creation"
-        }
-    ],
-    "Default": "Fail"
-    },
-    "Wait For Endpoint Creation": {
-    "Type": "Wait",
-    "Seconds": 60,
-    "Next": "Update Model Endpoint Auto-Scaling"
-    },
-    "Success": {
-    "Type": "Succeed"
-    },
-    "Failure Notification": {
-    "Type": "Task",
-    "Resource": "arn:aws:states:::sns:publish",
-    "Parameters": {
-        "TopicArn": "${FailureNotificationTopicArn}",
-        "Message.$": "$.cause",
-        "MessageStructure": "application/json",
-        "MessageAttributes": {}
-    },
-    "Next": "Fail"
-    },
-    "Fail": {
-    "Type": "Fail",
-    "Error": "Sagemaker Model Endpoint Deployment Failure",
-    "Cause": "$.cause . Please check logs."
+        "Next": "Fail"
+      },
+      "Fail": {
+        "Type": "Fail",
+        "Error": "Sagemaker Model Endpoint Deployment Failure",
+        "Cause": "$.cause . Please check logs."
+      }
     }
-}
 }
