@@ -1,7 +1,6 @@
-<br /><br /><br /><br />
 <p align="center">
   <img width="250" src="assets/icon.jpg" />
-</p><br /><br /><br />
+</p>
 
 # h2o-gbm-trainer
 > An AWS Block to create a Sagemaker Model Training Docker image for H2O GBM Estimator.
@@ -15,6 +14,7 @@ Lead Maintainer: [Anil Sener](mailto:senera@amazon.com)
 
 ## 📋 Table of content
 
+ - [Pre-requisites](#-pre-requisites)
  - [Installation](#-install)
  - [Metrics](#-metrics)
  - [Features](#-features)
@@ -35,19 +35,18 @@ Lead Maintainer: [Anil Sener](mailto:senera@amazon.com)
 In order to add this block, head to your project directory in your terminal and add it using NPM.
 You can build and push the Docker image created to Amazon ECR by executing the command below.
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
 npm run deploy --region=<region>
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
 npm run deploy-win --region=<region>
 ```
-<br />
+
 
 ## 📊 Metrics
 
@@ -76,37 +75,35 @@ This block is to create a Model Training Docker image for [H2O Gradient Boosting
 
 In order to build the [`Dockerfile`](./Dockerfile) file associated with this library, you will need to have [Docker Engine](https://docs.docker.com/engine/install/) and [Node Package Manager](https://www.npmjs.com/get-npm) installed on your development or build machine. You can then navigate to the project base directory and execute the command below.
 
-<summary>Linux/MacOs:</summary>
+Linux/MacOs:
 
 ```sh
 npm run build --build_mode=aws
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
 npm run build-win --build_mode=aws
 ```
-<br />
+
 
 ## 🔖 Testing in Local
 
 You can build and test the Docker image created in your local PC by executing the command below.
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
 npm run test-local
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
 npm run test-local-win
 ```
-<br />
+
 
 ## 🛠 Usage
 

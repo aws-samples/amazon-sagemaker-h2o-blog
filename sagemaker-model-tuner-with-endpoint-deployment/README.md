@@ -1,7 +1,6 @@
-<br /><br />
 <p align="center">
   <img width="240" src="assets/icon.jpg" />
-</p><br /><br />
+</p>
 
 # sagemaker-model-tuner-with-endpoint-deployment
 > A Sagemaker Model Hyperparameter Tuning and Endpoint Deployment Serverless Application as a Cloudformation stack.
@@ -118,26 +117,24 @@ Below is a list of JSON files that you'd be providing to this stack in order to 
 
 You can generate `ml-parameters.json` file using the scripts based on [jq](https://stedolan.github.io/jq/download/) :
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
 bash examples/create_example_ml-parameters_file.sh --account <account-id> --region <region> --bucket <s3bucket> --training_sg <training-security-group-id> --training_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" --hosting_sg <hosting-security-group-id> --hosting_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
 examples\create_example_ml-parameters_file.bat -jq=<PATH-TO-JQ>\jq-win64.exe -account=<account-id> -region=<region> -bucket=<s3bucket> -training-sg=<training-security-group-id> -training-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" -hosting-sg=<hosting-security-group-id> -hosting-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
 ```
-<br />
 
 Upload this generated JSON file in to the root folder in the S3 Bucket (you will pass this S3 Bucket during the deployment).
 
 ```sh
 aws s3 cp examples/ml-parameters.json s3://<s3bucket>/
 ```
-<br />
+
 
 > ⚠️ Please note that the maximum number of characters for `tuningJobName`, `endpointName`, `trainingJobDefinitionName` should be `17` as date/time suffix is added in Sagemaker API creation to these fields during Step Function invocation.
 
@@ -215,7 +212,7 @@ Upload this file in to the root folder in the S3 Bucket (you will pass this S3 B
 ```sh
 aws s3 cp examples/hyperparameters.json s3://<s3bucket>/
 ```
-<br />
+
 
 ### Run-time dependencies
 
@@ -267,35 +264,39 @@ This project creates also 3 nested serverless applications defined by [ML Parame
 
 This project creates a parent Step Function called `ModelTuningWithEndpointDeploymentStateMachine` which natively integrates with Amazon Step Functions entities that are defined by [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Model Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-deployer) AWS blocks. Below is the screenshot of `ModelTuningWithEndpointDeploymentStateMachine`, which is composing 2 nested workflows:
 
-<br /><br />
+
 <p align="center">
   <img width="350" src="assets/sfn_screenshot_1.png" />
-</p><br />
+</p>
 
 This block can be used both as a standalone project or a dependency for other AWS blocks which will involves an Amazon Sagemaker Model Tuning & Auto-Scaling Model Endpoint Deployment at any stage. Below is the architectural diagram of the created ML workflow:
 
-<br /><br />
+
 <p align="center">
   <img width="850" src="assets/ml_workflow.png" />
-</p><br />
+</p>
 
 ## 🛠 Usage
 
 1. Deploy the package via the NPM providing the settings for deployment. Please check the [Deployment Options](#Deployment-Options) that you can set below. 
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
-npm run deploy --region=<region> --s3bucket=<s3bucket> --environment=<environment> --paramstorepath=<paramstorepath>
+npm run deploy --region=<region> ^
+--s3bucket=<s3bucket> ^
+--environment=<environment> ^
+--paramstorepath=<paramstorepath>
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
-npm run deploy-win --region=<region> --s3bucket=<s3bucket> --environment=<environment> --paramstorepath=<paramstorepath>
+npm run deploy-win --region=<region> \
+--s3bucket=<s3bucket> \
+--environment=<environment> \
+--paramstorepath=<paramstorepath>
 ```
-<br />
 
 Note: When deployment is completed, please check `MLParameterProviderApplication`, `ModelTuningApplication` and `AutoScalingModelEndpointDeploymentApplication` Serverless Applications  in the AWS Console.
 
@@ -322,94 +323,94 @@ Below are different screenshots displaying how the different stage of a Model Tu
 
 You can see below a model tuning execution of the `ModelTuningWithEndpointDeploymentStateMachine` in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="450" src="assets/sfn_screenshot_2.png" />
-</p><br />
+</p>
 
 ### The Sagemaker Hyperparameter Tuning Job during execution
 
 Below is a screenshot of training jobs with `InProgress` status created by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_1.png" />
-</p><br />
+</p>
 
 
 ### The Sagemaker Hyperparameter Tuning Job after successful completion
 
 Below is a screenshot of training jobs with `Completed` and `Stopped` (due to early stopping feature) status created by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_2.png" />
-</p><br />
+</p>
 
 Below is a screenshot of the performance and configuration details of the training job which created the best model selected by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_3.png" />
-</p><br />
+</p>
 
 ### Created Amazon Sagemaker Model
 
 Navigate to `SageMaker Model` link to display the Sagemaker Model Definition in detail.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/model_1.png" />
-</p><br />
+</p>
 
 
 Below is a screenshot of the detailed settings associated with the Sagemaker Model such as the location of model artifact and inference image reference in the AWS Console.
 
-<br />
+
 <p align="center">
   <img src="assets/model_2.png" />
-</p><br />
+</p>
 
 ### The state machine during model deployment execution
 
 You can see below a model deployment execution of the `ModelTuningWithEndpointDeploymentStateMachine` in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="550" src="assets/sfn_screenshot_3.png" />
-</p><br />
+</p>
 
 Below is a screenshot of the `Sagemaker Model Endpoint` during the deployment.
 
-<br />
+
 <p align="center">
   <img src="assets/endpoint_1.png" />
-</p><br />
+</p>
 
 ### The state machine after completion
 
 You can see below a screenshot of a successfully Model tuning and deployment process operated by `ModelTuningWithEndpointDeploymentStateMachine` in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="450" src="assets/sfn_screenshot_4.png" />
-</p><br />
+</p>
 
 ### Deployed Auto-Scaling Amazon Sagemaker Model Enpoint
 
 Below is a screenshot of the `Sagemaker Model Endpoint` that has been successfully deployed by this Step Function in the AWS Console.
 
-<br />
+
 <p align="center">
   <img src="assets/endpoint_2.png" />
-</p><br />
+</p>
 
 Below is a screenshot of the `Endpoint Runtime Settings` associated with the auto-scaling Amazon Sagemaker Endpoint that has been successfully deployed by this Step Function in the AWS Console.
 
-<br />
+
 <p align="center">
   <img src="assets/endpoint_3.png" />
-</p><br />
+</p>
 
 ## 👀 See also
 

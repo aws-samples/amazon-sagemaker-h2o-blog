@@ -85,16 +85,30 @@ cd sagemaker-model-tuner-with-endpoint-deployment
 ```
 
 5.	Generate a ml-parameters.json file from the [template file](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/template-ml-parameters.json) using the scripts based on [jq](https://stedolan.github.io/jq/download/) application:
-Windows Operating System users:
+
+#### Windows Operating System users:
 
 ```sh
-examples\create_example_ml-parameters_file.bat -jq=<PATH-TO-JQ>\jq-win64.exe -account=<account-id> -region=<region> -bucket=<s3bucket> -training-sg=<training-security-group-id> -training-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" -hosting-sg=<hosting-security-group-id> -hosting-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
+examples\create_example_ml-parameters_file.bat ^
+-jq=<PATH-TO-JQ>\jq-win64.exe ^ 
+-account=<account-id> ^ 
+-region=<region> ^ 
+-bucket=<s3bucket> ^  
+-training-sg=<training-security-group-id> ^  
+-training-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" ^  -hosting-sg=<hosting-security-group-id> -hosting-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
 ```
 
-Linux/MacOs Operating System users:
+#### Linux/MacOs Operating System users:
 
 ```sh
-bash examples/create_example_ml-parameters_file.sh --account <account-id> --region <region> --bucket <s3bucket> --training_sg <training-security-group-id> --training_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" --hosting_sg <hosting- security-group-id> --hosting_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
+bash examples/create_example_ml-parameters_file.sh \
+--account <account-id> \
+--region <region> \
+--bucket <s3bucket> \
+--training_sg <training-security-group-id> \
+--training_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" \
+--hosting_sg <hosting- security-group-id> \
+--hosting_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
 ```
 
 6.	Upload the generated ml-parameter.json flle to the root directory in the <s3bucket>  S3 bucket:
@@ -112,27 +126,34 @@ aws s3 cp examples/hyperparameters.json s3://<s3bucket>/
 Note: This hyperparameters.json file provides the hyperparameters as defined in ParameterRanges and StaticHyperParameters APIs, which are used in Amazon SageMaker model tuning stage. 
 
 8. Make sure that your command line is in [sagemaker-model-tuner-with-endpoint-deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment) repository. Then, deploy the package via NPM providing the options.
-Windows Operating System users:
+
+#### Windows Operating System users:
 
 ```sh
-npm run deploy-win --region=<region> --s3bucket=<s3bucket> --environment=<environment> --paramstorepath=<paramstorepath>
+npm run deploy-win --region=<region> ^ 
+--s3bucket=<s3bucket> ^
+--environment=<environment> ^
+--paramstorepath=<paramstorepath>
 ```
 
-Linux/MacOs Operating System users:
+#### Linux/MacOs Operating System users:
 
 ```sh
-npm run deploy --region=<region> --s3bucket=<s3bucket> --environment=<environment> --paramstorepath=<paramstorepath>
+npm run deploy --region=<region> \
+--s3bucket=<s3bucket> \
+--environment=<environment> \
+--paramstorepath=<paramstorepath>
 ```
 
 9. Navigate to [h2o-gbm-trainer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) repository in your command line. Then, build and deploy the Model Training Docker Image to Amazon ECR via NPM as below:
 
-Windows Operating System users:
+#### Windows Operating System users:
 
 ```sh
 npm run deploy-win --region=<region> 
 ```
 
-Linux/MacOs Operating System users: 
+#### Linux/MacOs Operating System users: 
 
 ```sh
 npm run deploy --region=<region> 
@@ -140,29 +161,39 @@ npm run deploy --region=<region>
 
 10. Navigate to [h2o-gbm-predictor](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor) repository in your command line. Then, build and deploy the Model Inference Docker Image to Amazon ECR via NPM as below:
 
-Windows Operating System users:
+#### Windows Operating System users:
 
 ```sh
 npm run deploy-win --region=<region>
 ```
 
-Linux/MacOs Operating System users:
+#### Linux/MacOs Operating System users:
 ```sh
 npm run deploy --region=<region>
 ```
 
 11. Navigate to [h2o-gbm-algorithm-resource](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-algorithm-resource) repository in your command line. Then, execute the following command to create a SageMaker Algorithm Resource.
 
-Windows Operating System users:
+#### Windows Operating System users:
 
 ```sh
-npm run deploy-win --region=<region> --account_id=<account-id> --s3bucket=<s3bucket> --environment=development --training_image_name=h2o-gbm-trainer --inference_image_name=h2o-gbm-predictor
+npm run deploy-win --region=<region> ^
+--account_id=<account-id> ^
+--s3bucket=<s3bucket> ^
+--environment=development ^
+--training_image_name=h2o-gbm-trainer ^
+--inference_image_name=h2o-gbm-predictor
 ```
 
-Linux/MacOs Operating System users: 
+#### Linux/MacOs Operating System users: 
 
 ```sh
-npm run deploy --region=<region> --account_id=<account-id> --s3bucket=<s3bucket> --environment=development --training_image_name=h2o-gbm-trainer --inference_image_name=h2o-gbm-predictor
+npm run deploy --region=<region> \
+--account_id=<account-id> \
+--s3bucket=<s3bucket> \
+--environment=development \
+--training_image_name=h2o-gbm-trainer \
+--inference_image_name=h2o-gbm-predictor
 ```
 
 ## 🛠 Usage

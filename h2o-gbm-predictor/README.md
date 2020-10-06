@@ -1,7 +1,6 @@
-<br /><br /><br /><br />
 <p align="center">
   <img width="250" src="assets/icon.jpg" />
-</p><br /><br /><br />
+</p>
 
 # h2o-gbm-predictor
 > An AWS Block to create a Sagemaker Model Inference Docker image for H2O GBM Predictor.
@@ -15,6 +14,7 @@ Lead Maintainer: [Anil Sener](mailto:senera@amazon.com)
 
 ## 📋 Table of content
 
+ - [Pre-requisites](#-pre-requisites)
  - [Installation](#-install)
  - [Metrics](#-metrics)
  - [Features](#-features)
@@ -25,24 +25,28 @@ Lead Maintainer: [Anil Sener](mailto:senera@amazon.com)
  - [Usage](#-usage)
  - [See also](#-see-also)
 
+## 🎒 Pre-requisites
+
+ - You should have Administrator rights in your PC if you are a Windows user. If you are a Linux or MacOS user, your used should be a member of “docker” group.
+ - If you are Windows user, [AWS Tools for Powershell](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-getting-set-up-windows.html) will be automatically installed to your PC by the deployment windows batch scripts (Minimum PowerShell version is 5.1).  
+ 
 ## 🚀 Install
 
 In order to add this block, head to your project directory in your terminal and add it using NPM.
 You can build and push the Docker image created to Amazon ECR by executing the command below.
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
 npm run deploy --region=<region>
 ```
-<br />
 
-<summary>Windows</summary>
+#### Windows
 
 ```sh
 npm run deploy-win --region=<region>
 ```
-<br />
+
 
 ## 📊 Metrics
 
@@ -55,11 +59,6 @@ Metric | Value
 **Deployment Time** | Depends on your network bandwith
 **Audience** | Developers, Solutions Architects, Data Scientists
 **Requirements** | [Maven](https://maven.apache.org/download.cgi),[Docker Engine](https://docs.docker.com/engine/install/),[Node Package Manager](https://www.npmjs.com/get-npm)
-
-## 🎒 Pre-requisites
-
- - You should have Administrator rights in your PC if you are a Windows user. If you are a Linux or MacOS user, your used should be a member of “docker” group.
- - If you are Windows user, [AWS Tools for Powershell](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-getting-set-up-windows.html) will be automatically installed to your PC by the deployment windows batch scripts (Minimum PowerShell version is 5.1).  
 
 ## 🔖 Features
 
@@ -76,44 +75,40 @@ This block is to create a Model Inference Docker image for [H2O Gradient Boostin
 
 In order to build the [`Dockerfile`](./Dockerfile) file associated with this library, you will need to have [Docker Engine](https://docs.docker.com/engine/install/) and [Node Package Manager](https://www.npmjs.com/get-npm) installed on your development or build machine. You can then navigate to the project base directory and execute the command below.
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
 npm run build --build_mode=aws
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
 npm run build-win --build_mode=aws
 ```
-<br />
 
 ## 🔖 Testing in Local
 
 You can build and test the Docker image created in your local PC by executing the command below.
 
-<summary>Linux/MacOs:</summary>
+#### Linux/MacOs:
 
 ```sh
 npm run test-local
 ```
-<br />
 
-<summary>Windows:</summary>
+#### Windows:
 
 ```sh
 npm run test-local-win
 ```
-<br />
 
 <summary>Open another terminal and invoke the prediction REST API:</summary>
 
 ```sh
 curl -i -X POST -H "Content-Type: application/json" -d "{\"Pclass\":\"3\",\"Sex\":\"male\",\"Age\":\"22\",\"SibSp\":\"1\",\"Parch\":\"0\",\"Fare\":\"7.25\",\"Embarked\":\"S\"}" http://localhost:8080/invocations
 ```
-<br />
+
 
 ## 🛠 Usage
 

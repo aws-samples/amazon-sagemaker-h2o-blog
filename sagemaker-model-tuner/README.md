@@ -1,7 +1,6 @@
-<br /><br /><br />
 <p align="center">
   <img width="500" src="assets/icon.png" />
-</p><br /><br />
+</p>
 
 # sagemaker-model-tuner
 > A Sagemaker model hyper-parameter tuning serverless application as a Cloudformation stack
@@ -51,10 +50,10 @@ Metric | Value
 
 This block is to build the infrastucture required to implement an Amazon Sagemaker Model Hyperparameter Tuning Process. It creates a Step Function called `ModelTuningStateMachine` which natively integrates with Amazon Sagemaker, AWS Lambda & Amazon SNS entities that are created. This block can be used both as a standalone project or a dependency for other AWS blocks which will involves an Amazon Sagemaker Model Hyperparameter Tuning at any stage.
 
-<br /><br />
+
 <p align="center">
   <img width="350" src="assets/sfn_screenshot_1.png" />
-</p><br />
+</p>
 
 ## 🛠 Usage
 
@@ -249,69 +248,69 @@ Below are different screenshots displaying how the different stage of a Sagemake
 
 You can see below a current execution of the `ModelTuningStateMachine` in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="550" src="assets/sfn_screenshot_2.png" />
-</p><br />
+</p>
 
 ### The Sagemaker Hyperparameter Tuning Job during execution
 
 Below is a screenshot of training jobs with `InProgress` status created by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_1.png" />
-</p><br />
+</p>
 
 
 ### The state machine after a successful completion
 
 You can see below a screenshot of a successful hyperparameter tuning job operated by `ModelTuningStateMachine` in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="550" src="assets/sfn_screenshot_4.png" />
-</p><br />
+</p>
 
 You can see below a current execution event history of the model tuning state machine in the AWS Step Functions console. Navigate to `SageMaker Hyperparameter Tuning Job` link to track status of the model tuning in detail.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/sfn_screenshot_3.png" />
-</p><br />
+</p>
 
 ### The Sagemaker Hyperparameter Tuning Job after successful completion
 
 Below is a screenshot of training jobs with `Completed` and `Stopped` (due to early stopping feature) status created by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_2.png" />
-</p><br />
+</p>
 
 Below is a screenshot of the performance and configuration details of the training job which created the best model selected by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_3.png" />
-</p><br />
+</p>
 
 ### Created Amazon Sagemaker Model
 
 Navigate to `SageMaker Model` link to the Sagemaker Model Definition in detail.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/sfn_screenshot_5.png" />
-</p><br />
+</p>
 
 
 Below is a screenshot of the detailed settings associated with the Sagemaker Model such as the location of model artifact and inference image in the AWS Console.
 
-<br />
+
 <p align="center">
   <img src="assets/model_1.png" />
-</p><br />
+</p>
 
 ## 👀 See also
 

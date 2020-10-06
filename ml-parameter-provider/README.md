@@ -1,7 +1,6 @@
-<br /><br />
 <p align="center">
   <img width="240" src="assets/icon.png" />
-</p><br /><br />
+</p>
 
 # ml-parameter-provider
 > A Parameter Provider Toolkit for ML Workloads as a Cloudformation stack.
@@ -120,21 +119,21 @@ You can generate `ml-parameters.json` file using the scripts based on [jq](https
 ```sh
 bash examples/create_example_ml-parameters_file.sh --account <account-id> --region <region> --bucket <s3bucket> --training_sg <training-security-group-id> --training_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" --hosting_sg <hosting-group-id> --hosting_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>
 ```
-<br />
+
 
 <summary>Windows:</summary>
 
 ```sh
 examples\create_example_ml-parameters_file.bat -jq=<PATH-TO-JQ>\jq-win64.exe -account=<account-id> -region=<region> -bucket=<s3bucket> -training-sg=<training-security-group-id> -training-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>" -hosting-sg=<hosting-group-id> -hosting-subnets="<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
 ```
-<br />
+
 
 Upload this generated JSON file in to the root folder in the S3 Bucket (you will pass this S3 Bucket during the deployment).
 
 ```sh
 aws s3 cp examples/ml-parameters.json s3://<s3bucket>/
 ```
-<br />
+
 
 > ⚠️ Please note that the maximum number of characters for `tuningJobName`, `endpointName`, `trainingJobDefinitionName` should be `17` as date/time suffix is added in Sagemaker API creation to these fields during Step Function invocation.
 
@@ -212,7 +211,7 @@ Upload this file in to the root folder in the S3 Bucket (you will pass this S3 B
 ```sh
 aws s3 cp examples/hyperparameters.json s3://<s3bucket>/
 ```
-<br />
+
 
 ### Run-time dependencies
 
@@ -260,10 +259,10 @@ This JSON file includes parameters which will be used at run-time by this stack.
 
 This block is used to import ML Workflow Parameters from AWS Systems Manager Parameter Store required by ML Workflows like Model Training, Tuning & Deployment which are orchestrated by AWS Step Functions. It also provides a Lambda Function which can retrieve these parameters to execute an ML Workflow State Machine specified during the Toolkit Deployment.
 
-<br /><br />
+
 <p align="center">
   <img width="750" src="assets/architecture.png" />
-</p><br />
+</p>
 
 ## 🛠 Usage
 
@@ -297,7 +296,7 @@ Name           | Default value | Description
 **ParametersS3BucketName** | None | Please set the S3 bucket name where parameters JSON file to be read from during the deployment.
 **ParametersS3Key** | `ml-parameters.json` | Please set the S3 key prefix where parameters JSON files will be uploaded.
 
-<br />
+
 
 ## 📷 Screenshots
 
@@ -307,19 +306,19 @@ Below are different screenshots displaying sexecution of ML Workflow AWS Step Fu
 
 You can see below a current execution of the `HyperparameterTuningModelDeploymentStateMachine` in the AWS Step Functions console.
 
-<br /><br />
+
 <p align="center">
   <img width="750" src="assets/step_functions_1.png" />
-</p><br />
+</p>
 
 ### The Sagemaker Hyperparameter Tuning Job during execution
 
 Below is a screenshot of training jobs with `InProgress` status created by Sagemaker Hyperparameter Tuning Job.
 
-<br />
+
 <p align="center">
   <img width="950" src="assets/tuning_1.png" />
-</p><br />
+</p>
 
 ## 👀 See also
 

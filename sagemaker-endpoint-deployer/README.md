@@ -1,7 +1,7 @@
-<br /><br />
+
 <p align="center">
   <img width="240" src="assets/icon.jpg" />
-</p><br /><br />
+</p>
 
 # sagemaker-endpoint-deployer
 > Auto-Scaling Sagemaker Model Endpoint Deployment Serverless Application as a Cloudformation stack.
@@ -51,10 +51,10 @@ Metric | Value
 
 This block is to build the infrastucture required to implement an Auto-scaling Amazon Sagemaker Model Endpoint Deployment Process given that at least one [Amazon Sagemaker Model Resource](https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html) is already created. It creates a Step Function called `AutoScalingModelEndpointDeploymentStateMachine` which natively integrates with Amazon Sagemaker, AWS Lambda & Amazon SNS entities that are created. This block can be used both as a standalone project or a dependency for other AWS blocks which will involves an Auto-scaling Amazon Sagemaker Model Endpoint at any stage.
 
-<br /><br />
+
 <p align="center">
   <img width="550" src="assets/sfn_screenshot_1.png" />
-</p><br />
+</p>
 
 ## 🛠 Usage
 
@@ -127,7 +127,7 @@ Name           | Description
 **autoscalingMaxCapacity** | Maximum Number of Instances allowed to Scale Out by Automatic Scaling Mechanism.
 **targetTrackingScalingPolicyConfiguration** | (Optional) - Should be filled to customize the default Target Tracking Automatic Scaling Policy.
 
-<br />
+
 
 ## 📷 Screenshots
 
@@ -137,35 +137,35 @@ Below are different screenshots displaying how the different stage of a deployme
 
 You can see below a current execution of the deployment state machine in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="550" src="assets/sfn_screenshot_2.png" />
-</p><br />
+</p>
 
 ### The state machine after a successful completion
 
 You can see below a screenshot of a successful deployment operated by the deployment state machine in the AWS Step Functions console.
 
-<br />
+
 <p align="center">
   <img width="550" src="assets/sfn_screenshot_3.png" />
-</p><br />
+</p>
 
 ### Deployed Auto-Scaling Amazon Sagemaker Model Enpoint
 
 Below is a screenshot of the endpoint that has been successfully deployed by this step-function in the AWS Console.
 
-<br />
+
 <p align="center">
   <img src="assets/endpoint.png" />
-</p><br />
+</p>
 
 Below is a screenshot of the `Endpoint Runtime Settings` associated with the auto-scaling Amazon Sagemaker Endpoint that has been successfully deployed by this step-function in the AWS Console.
 
-<br />
+
 <p align="center">
   <img src="assets/endpoint_2.png" />
-</p><br />
+</p>
 
 ## 👀 See also
 
