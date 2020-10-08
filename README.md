@@ -82,7 +82,8 @@ Execute the following steps to deploy this project to your AWS account:
 aws s3api create-bucket --bucket <s3bucket> --create-bucket-configuration LocationConstraint=<region>
 ```
 
-2. You can optionally create or reuse an existing Amazon Virtual Private Cloud (VPC) with subnets accessible from your localhost. (These accessible subnets will be used for model endpoint tesing) 
+2. You can optionally create or reuse an existing [Amazon Virtual Private Cloud (VPC)](https://aws.amazon.com/vpc/) with subnets accessible from your localhost. (These accessible subnets will be used for model endpoint tesing) 
+
 3.	Download the infrastructure repositories from Github.
 
 ```sh
