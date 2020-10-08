@@ -20,21 +20,34 @@ This project creates also 3 nested serverless applications defined by [ML Parame
 
 This project creates a parent Step Function called `ModelTuningWithEndpointDeploymentStateMachine` which natively integrates with Amazon Step Functions entities that are defined by [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Model Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-deployer) AWS blocks. Below is the screenshot of `ModelTuningWithEndpointDeploymentStateMachine`, which is composing 2 nested workflows:
 
-<br /><br />
 <p align="center">
   <img width="350" src="sagemaker-model-tuner-with-endpoint-deployment/assets/sfn_screenshot_1.png" />
-</p><br />
+</p>
 
 This project can be used both as a standalone project or a dependency for other AWS blocks which will involves an Amazon Sagemaker Model Tuning & Auto-Scaling Model Endpoint Deployment at any stage. Below is the architectural diagram of the created ML workflow:
 
-<br /><br />
 <p align="center">
   <img width="850" src="sagemaker-model-tuner-with-endpoint-deployment/assets/ml_workflow.png" />
-</p><br />
+</p>
 
 Two Amazon Elastic Container Registry (ECR) images should be created before executing this AWS Step Function: 
 1.	[h2o-gbm-trainer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer): H2O model training Docker image executing a Python Application. 
 2.	[h2o-gbm-predictor](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor): H2O model inference Docker image executing a Spring Boot Java application.
+
+<b>ModelTuningWithEndpointDeploymentStateMachine</b> will execute end-to-end ML pipeline orchestrating two nested AWS Step Functions workflows in sequence: 
+
+I.	<b>ModelTuningStateMachine</b> executes:
+
+  1.	[CreateHyperparameterTuningJob](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateHyperParameterTuningJob.html) step: pulls the custom <b>h2o-gbm-trainer</b> Docker image and runs the training containers on multiple training instances in parallel using [SageMaker Hyperparameter Optimization](https://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning.html) service to select the best model using validation dataset.
+  2.	[AWS Lambda](https://aws.amazon.com/lambda/) step: selects the best model artifact location from hyperparameter optimization outputs, captures the Inference Image URI from [Sagemaker Algorithm Resource](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-mkt-create-algo.html) name and defines a [Production Variant](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_ProductionVariant.html) for Sagemaker Model Endpoint to be created.
+  3. [CreateModel](https://docs.aws.amazon.com/sagemaker/latest/dg/API_CreateModel.html) step: creates a SageMaker Model Resource for H2O MOJO model artifact.
+
+II.	<b>AutoScalingModelEndpointDeploymentStateMachine</b> triggers:
+
+  1.	[CreateEndpointConfig](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpointConfig.html) step: registers a Sagemaker Model Endpoint Configuration.
+  2.	[CreateEndpoint](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html) / [UpdateEndpoint](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_UpdateEndpoint.html) step: runs model hosting container/s on one or more model inference instances pulling the custom <b>h2o-gbm-predictor</b> Docker image and deploys the H2O MOJO model artifact to a [Sagemaker Model Endpoint](https://docs.aws.amazon.com/sagemaker/latest/dg/how-it-works-deployment.html#how-it-works-hosting). 
+  3.	[RegisterScalableTarget](https://docs.aws.amazon.com/autoscaling/application/APIReference/API_RegisterScalableTarget.html) step: configures an [AWS Application AutoScaling](https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html) policy to setup an auto-scaling Sagemaker Model Endpoint.
+
 
 ## 🎒 Pre-requisites
 
@@ -57,7 +70,6 @@ There are two types of dependencies to deploy and execute this ML workflow:
     - [SageMaker Algorithm Resource](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-mkt-create-algo.html)
     - [Training](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/train.csv) and [Validation](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/validation.csv) datasets
     - [manifest.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/manifest.json) file 
-
 
 
 ## 🚀 Installation
@@ -144,6 +156,17 @@ npm run deploy --region=<region> \
 --environment=<environment> \
 --paramstorepath=<paramstorepath>
 ```
+
+### Deployment Options
+
+The deployment options that you can pass to this solution are described below.
+
+Name           | Default value | Description
+-------------- | ------------- | -----------
+**region** | None | AWS Region to deploy the infrastructure for Sagemaker Model Hyperparameter Tuning and Endpoint Deployment Serverless Application.
+**s3bucket** | None | Please set the S3 bucket name where `manifest.json`, `hyperparameters.json` and `ml-parameters.json` JSON files will be uploaded.
+**environment** | `development` | Environment to tag the created resources.
+**paramstorepath** | `/ml-project` | Parent path in AWS Systems Manager Parameter Store to store all parameters imported by the toolkit. It is recommended to set this to a meaningful ML project/domain name.
 
 9. Navigate to [h2o-gbm-trainer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) repository in your command line. Then, build and deploy the Model Training Docker Image to Amazon ECR via NPM as below:
 

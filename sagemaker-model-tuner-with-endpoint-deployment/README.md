@@ -311,7 +311,7 @@ The deployment options that you can pass to this solution are described below.
 Name           | Default value | Description
 -------------- | ------------- | -----------
 **region** | None | AWS Region to deploy the infrastructure for Sagemaker Model Hyperparameter Tuning and Endpoint Deployment Serverless Application.
-**s3bucket** | None | Please set the S3 bucket name where manifest, `hyperparameters.json` and `ml-parameters.json` JSON files will be uploaded.
+**s3bucket** | None | Please set the S3 bucket name where `manifest.json`, `hyperparameters.json` and `ml-parameters.json` JSON files will be uploaded.
 **environment** | `development` | Environment to tag the created resources.
 **paramstorepath** | `/ml-project` | Parent path in AWS Systems Manager Parameter Store to store all parameters imported by the toolkit. It is recommended to set this to a meaningful ML project/domain name.
 
