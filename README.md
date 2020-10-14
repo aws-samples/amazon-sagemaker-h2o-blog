@@ -8,6 +8,7 @@
  - [Pre-requisites](#-pre-requisites)
  - [Installation](#-installation)
  - [Usage](#-usage)
+ - [Cleanup](#-cleanup)
  - [Security](#-security)
  - [License](#-license)
  - [See also](#-see-also)
@@ -63,10 +64,11 @@ II.	<b>AutoScalingModelEndpointDeploymentStateMachine</b> triggers:
 
 There are two types of dependencies to deploy and execute this ML workflow:
 1.	Dependencies for Infrastructure Deployment
-    - A S3 Bucket (<s3bucket>)
+    - A S3 Bucket (\<s3bucket\>)
     - [ml-parameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/template-ml-parameters.json) file
     - [hyperparameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/hyperparameters.json) file
 2. Dependencies for ML Workflow Execution Run-time
+    - Create [Training](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) and [Inference](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor) Image in [Amazon ECR](https://aws.amazon.com/ecr/)
     - [SageMaker Algorithm Resource](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-mkt-create-algo.html)
     - [Training](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/train.csv) and [Validation](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/validation.csv) datasets
     - [manifest.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/manifest.json) file 
@@ -74,9 +76,13 @@ There are two types of dependencies to deploy and execute this ML workflow:
 
 ## 🚀 Installation
 
+Before starting ML Workflow Infrastructure deployment, [ml-parameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/blob/master/sagemaker-model-tuner-with-endpoint-deployment/examples/template-ml-parameters.json) and [hyperparameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/hyperparameters.json) files should be generated with a set of configuration parameters to customize the end-to-end ML workflow and upload them to a S3 Bucket. 
+
+These parameters will be stored to [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) by the [Machine Learning Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider) application. Storing these parameters in this service facilitates their versioning and granular access control.
+
 Execute the following steps to deploy this project to your AWS account:
 
-1. Create a S3 bucket (<s3bucket>) on which your AWS user has a S3 Full Access permission.
+1. Create a S3 bucket (\<s3bucket\>) where your AWS user has a S3 Full Access permission.
 
 ```sh
 aws s3api create-bucket --bucket <s3bucket> --create-bucket-configuration LocationConstraint=<region>
@@ -91,7 +97,7 @@ git clone https://github.com/aws-samples/amazon-sagemaker-h2o-blog.git
 ```
 Note: Please verify that you have downloaded all of the seven repositories.
 
-4.	Navigate to main repository ([sagemaker-model-tuner-with-endpoint-deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment)) in your command line.
+4.	Navigate to parent repository ([sagemaker-model-tuner-with-endpoint-deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment)) in your command line.
 
 ```sh
 cd sagemaker-model-tuner-with-endpoint-deployment
@@ -124,26 +130,29 @@ bash examples/create_example_ml-parameters_file.sh \
 --hosting_subnets "<subnet-id-1>,<subnet-id-2>,<subnet-id-3>"
 ```
 
-6.	Upload the generated ml-parameter.json flle to the root directory in the <s3bucket>  S3 bucket:
+6.	Upload the generated <b>ml-parameter.json</b> flle to the root directory in the S3 bucket (\<s3bucket\>):
 
 ```sh
 aws s3 cp examples/ml-parameters.json s3://<s3bucket>/
 ```
 This ml-parameter.json flle is used to specify the parameters required by end-to-end machine learning pipeline except the hyperparameters.
 
-7.	Upload hyperparameters.json file to the root directory in the <s3bucket>  S3 bucket:
+7.	Upload <b>hyperparameters.json</b> file to the root directory in the S3 bucket (\<s3bucket\>):
 
 ```sh
 aws s3 cp examples/hyperparameters.json s3://<s3bucket>/
 ```
-Note: This hyperparameters.json file provides the hyperparameters as defined in ParameterRanges and StaticHyperParameters APIs, which are used in Amazon SageMaker model tuning stage. 
+Note: This hyperparameters.json file provides the hyperparameters as defined in ParameterRanges and [StaticHyperParameters](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_HyperParameterTrainingJobDefinition.html#sagemaker-Type-HyperParameterTrainingJobDefinition-StaticHyperParameters) APIs, which are used in Amazon SageMaker model tuning stage. 
+
+All of the hyperparameters are created in compliance with the official [H2O GBM Documentation](https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/gbm.html#defining-a-gbm-model)  (except “training” hyperparameter) and [SageMaker Algorithm Resource](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-mkt-create-algo.html) (which is deployed in a later section) controls the Hyperparameter Specification. 
 
 8. Make sure that your command line is in [sagemaker-model-tuner-with-endpoint-deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment) repository. Then, deploy the package via NPM providing the options.
 
 #### Windows Operating System users:
 
 ```sh
-npm run deploy-win --region=<region> ^ 
+npm run deploy-win ^ 
+--region=<region> ^ 
 --s3bucket=<s3bucket> ^
 --environment=<environment> ^
 --paramstorepath=<paramstorepath>
@@ -152,7 +161,8 @@ npm run deploy-win --region=<region> ^
 #### Linux/MacOs Operating System users:
 
 ```sh
-npm run deploy --region=<region> \
+npm run deploy \
+--region=<region> \
 --s3bucket=<s3bucket> \
 --environment=<environment> \
 --paramstorepath=<paramstorepath>
@@ -223,6 +233,32 @@ npm run deploy --region=<region> \
 ## 🛠 Usage
 
 Please check "Execute the ML Workflow with Dependencies for Execution Run-time" section of "Train and Serve H2O Models using Amazon Sagemaker" AWS ML Blog Post. 
+
+## Cleanup
+
+Please follow the steps below to delete all resources and stop incurring costs to your AWS account:
+
+1.	Delete the SageMaker Model Endpoint, Configuration & Model by executing the commands below:
+
+```sh
+aws sagemaker delete-endpoint --endpoint-name survival-endpoint
+aws sagemaker delete-endpoint-config --endpoint-config-name survival-endpoint-<timestamp>
+aws sagemaker delete-model --model-name survival-model-<timestamp>
+```
+
+2.	Delete all AWS Cloudformation stacks by executing the commands below:
+
+```sh
+aws cloudformation delete-stack --stack-name sagemaker-model-tuner-with-endpoint-deployment
+aws cloudformation delete-stack --stack-name h2o-gbm-algorithm-resource
+aws cloudformation delete-stack --stack-name aws-sam-cli-managed-default
+```
+
+3.	Remember to delete the S3 bucket called \<s3bucket>\.
+
+```sh
+aws s3 rb s3://<s3bucket> --force  
+```
 
 ## Security
 

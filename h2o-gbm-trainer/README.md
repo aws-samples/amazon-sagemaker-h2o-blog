@@ -104,6 +104,11 @@ npm run test-local
 npm run test-local-win
 ```
 
+Please observe how a H2O GBM Model is trained, validated and exported as a MOJO artifact:
+
+<p align="left">
+  <img width="550" src="assets/training_test.png" />
+</p>
 
 ## 🛠 Usage
 

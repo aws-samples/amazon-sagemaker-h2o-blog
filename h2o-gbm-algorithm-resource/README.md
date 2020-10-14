@@ -1,7 +1,6 @@
-<br /><br /><br /><br />
 <p align="center">
   <img width="250" src="assets/icon.jpg" />
-</p><br /><br /><br />
+</p>
 
 # h2o-gbm-algorithm-resource
 > A Sagemaker Algorithm Resource for H2O Gradient Boosting Machines (GBM) as a Cloudformation stack.
@@ -25,21 +24,30 @@ Lead Maintainer: [Anil Sener](mailto:senera@amazon.com)
 ## 🚀 Install
 
 In order to add this block, head to your project directory in your terminal and add it using NPM.
-Execute the following command to create a Sagemaker Algorithm Resource:
+Execute the following command to create a [Sagemaker Algorithm Resource](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-mkt-create-algo.html):
 
-<summary>Linux/MacOs:</summary>
-
-```sh
-npm run deploy --region=<region> --account_id=<account-id> --s3bucket=<s3bucket> --environment=development --training_image_name=h2o-gbm-trainer --inference_image_name=h2o-gbm-predictor
-```
-<br />
-
-<summary>Windows:</summary>
+#### Linux/MacOs:
 
 ```sh
-npm run deploy-win --region=<region> --account_id=<account-id> --s3bucket=<s3bucket> --environment=development --training_image_name=h2o-gbm-trainer --inference_image_name=h2o-gbm-predictor
+npm run deploy --region=<region> \
+--account_id=<account-id> \
+--s3bucket=<s3bucket> \
+--environment=development \
+--training_image_name=h2o-gbm-trainer \
+--inference_image_name=h2o-gbm-predictor
 ```
-<br />
+
+## Windows:
+
+```sh
+npm run deploy-win ^
+--region=<region> ^
+--account_id=<account-id> ^
+--s3bucket=<s3bucket> ^
+--environment=development ^
+--training_image_name=h2o-gbm-trainer ^
+--inference_image_name=h2o-gbm-predictor
+```
 
 > ⚠️ You need to have the [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) installed on your deployment machine before installing this package.
 

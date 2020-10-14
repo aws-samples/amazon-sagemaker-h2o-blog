@@ -103,12 +103,36 @@ npm run test-local
 npm run test-local-win
 ```
 
-<summary>Open another terminal and invoke the prediction REST API:</summary>
+Please observe how rapidly the application launches in the log below:
+
+```sh
+INFO 1 --- [main] a.h.modelendpoint.app.SagemakerLauncher  : Started SagemakerLauncher in 3.992 seconds (JVM running for 4.488)
+```
+
+Open another terminal and invoke the prediction REST API in your localhost, repeat it 2 times more:
 
 ```sh
 curl -i -X POST -H "Content-Type: application/json" -d "{\"Pclass\":\"3\",\"Sex\":\"male\",\"Age\":\"22\",\"SibSp\":\"1\",\"Parch\":\"0\",\"Fare\":\"7.25\",\"Embarked\":\"S\"}" http://localhost:8080/invocations
 ```
 
+The container launched in your pc will return the following inference response:
+
+```sh
+{
+  "calibratedClassProbabilities":"null",
+  "classProbabilities":"[0.6713441802800413, 0.32865581971995883]",
+  "prediction":"0",
+  "predictionIndex":0
+}
+```
+
+Please observe how rapidly the prediction response is received as in the log below:
+
+```sh
+Prediction Thread http-nio-8080-exec-1 is closed: 22  milliseconds
+Prediction Thread http-nio-8080-exec-3 is closed: 3  milliseconds
+Prediction Thread http-nio-8080-exec-5 is closed: 1  milliseconds
+```
 
 ## 🛠 Usage
 
