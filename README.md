@@ -63,7 +63,7 @@ II.	<b>AutoScalingModelEndpointDeploymentStateMachine</b> triggers:
  - If you are a Windows user, [AWS Tools for Powershell](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-getting-set-up-windows.html) will be automatically installed to your PC by the deployment windows batch scripts (Minimum PowerShell version is 5.1).
 
 There are two types of dependencies to deploy and execute this ML workflow:
-1.	Dependencies for Infrastructure Deployment
+1.	ML Workflow Infrastructure Deployment
     - A S3 Bucket (\<s3bucket\>)
     - [ml-parameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/template-ml-parameters.json) file
     - [hyperparameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/hyperparameters.json) file
