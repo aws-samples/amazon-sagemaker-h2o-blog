@@ -8,7 +8,7 @@
  - [Pre-requisites](#-pre-requisites)
  - [Installation](#-installation)
  - [Usage](#-usage)
- - [Cleanup](#-broom-cleanup)
+ - [Cleanup](#broom-cleanup)
  - [Security](#-security)
  - [License](#-license)
  - [See also](#-see-also)
