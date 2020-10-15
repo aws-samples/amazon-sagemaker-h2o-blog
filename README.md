@@ -234,7 +234,7 @@ npm run deploy --region=<region> \
 
 Please check "Execute the ML Workflow with Dependencies for Execution Run-time" section of "Train and Serve H2O Models using Amazon Sagemaker" AWS ML Blog Post. 
 
-## Cleanup
+## :broom: Cleanup
 
 Please follow the steps below to delete all resources and stop incurring costs to your AWS account:
 
