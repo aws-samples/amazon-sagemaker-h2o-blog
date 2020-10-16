@@ -234,6 +234,39 @@ npm run deploy --region=<region> \
 
 Please check "Execute the ML Workflow with Dependencies for Execution Run-time" section of "Train and Serve H2O Models using Amazon Sagemaker" AWS ML Blog Post. 
 
+### Test Amazon SageMaker Model Endpoint:
+
+1.	Execute the command below to invoke the model endpoint.
+
+#### Windows Operating System users:
+
+```sh
+aws sagemaker-runtime invoke-endpoint --endpoint-name survival-endpoint ^
+--content-type application/jsonlines ^
+--accept application/jsonlines ^
+--body "{\"Pclass\":\"3\",\"Sex\":\"male\",\"Age\":\"22\",\"SibSp\":\"1\",\"Parch\":\"0\",\"Fare\":\"7.25\",\"Embarked\":\"S\"}"  response.json && cat response.json
+```
+
+#### Linux/MacOs Operating System users:
+
+```sh 
+aws sagemaker-runtime invoke-endpoint --endpoint-name survival-endpoint \
+--content-type application/jsonlines \
+--accept application/jsonlines \
+--body "{\"Pclass\":\"3\",\"Sex\":\"male\",\"Age\":\"22\",\"SibSp\":\"1\",\"Parch\":\"0\",\"Fare\":\"7.25\",\"Embarked\":\"S\"}"  response.json --cli-binary-format raw-in-base64-out && cat response.json
+```
+
+2.	As displayed in the Model Endpoint response below, this unfortunate third class and male passenger didn’t survive (prediction is 0) according to the trained model. 
+
+```sh 
+{
+  "calibratedClassProbabilities":"null",
+  "classProbabilities":"[0.686304913500942, 0.313695086499058]",
+  "prediction":"0",
+  "predictionIndex":0
+}
+```
+
 ## :broom: Cleanup
 
 Please follow the steps below to delete all resources and stop incurring costs to your AWS account:
