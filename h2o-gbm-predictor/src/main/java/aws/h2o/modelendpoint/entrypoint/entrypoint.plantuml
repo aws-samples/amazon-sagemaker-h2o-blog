@@ -1,6 +1,7 @@
 @startuml
 
 title __entrypoint's Class Diagram__\n
+left to right direction
 
   namespace aws.h2o.modelendpoint.entrypoint {
     class aws.h2o.modelendpoint.entrypoint.Predictor {
