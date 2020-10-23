@@ -63,11 +63,11 @@ II.	<b>AutoScalingModelEndpointDeploymentStateMachine</b> triggers:
  - If you are a Windows user, [AWS Tools for Powershell](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-getting-set-up-windows.html) will be automatically installed to your PC by the deployment windows batch scripts (Minimum PowerShell version is 5.1).
 
 There are two types of dependencies to deploy and execute this ML workflow:
-1.	ML Workflow Infrastructure Deployment
+1. ML Workflow Infrastructure Deployment
     - A S3 Bucket (\<s3bucket\>)
     - [ml-parameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/template-ml-parameters.json) file
     - [hyperparameters.json](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/hyperparameters.json) file
-2. Dependencies for ML Workflow Execution Run-time
+2. Dependencies for ML workflow execution
     - Create [Training](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) and [Inference](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor) Image in [Amazon ECR](https://aws.amazon.com/ecr/)
     - [SageMaker Algorithm Resource](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-mkt-create-algo.html)
     - [Training](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/train.csv) and [Validation](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment/examples/validation.csv) datasets
@@ -232,7 +232,26 @@ npm run deploy --region=<region> \
 
 ## 🛠 Usage
 
-Please check "Execute the ML Workflow with Dependencies for Execution Run-time" section of "Train and Serve H2O Models using Amazon Sagemaker" AWS ML Blog Post. 
+Please check "Training and serving H2O Models using Amazon Sagemaker" AWS ML Blog Post for detailed usage guidance. 
+
+### Running the ML workflow
+
+To start running your workflow, complete the following steps:
+
+1.	Upload the train.csv and validation.csv files to their dedicated directories in the \<s3bucket\> bucket (replace\<s3bucket\> with the S3 bucket name in the manifest.json file):
+
+```sh
+aws s3 cp examples/train.csv s3://<s3bucket>/titanic/training/
+aws s3 cp examples/validation.csv s3://<s3bucket>/titanic/validation/
+```
+
+2.	Upload the file under the s3://\<s3bucket\>/manifests directory located in the same S3 bucket specified during the ML workflow deployment:
+
+```sh
+aws s3 cp examples/manifest.json s3://<s3bucket>/manifests
+```
+
+As soon as the manifest.json file is uploaded to Amazon S3, Step Functions puts the ML workflow in a Running state.
 
 ### Test Amazon SageMaker Model Endpoint:
 
