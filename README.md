@@ -168,7 +168,7 @@ npm run deploy \
 --paramstorepath=<paramstorepath>
 ```
 
-### Deployment Options
+#### Deployment Options
 
 The deployment options that you can pass to this solution are described below.
 
