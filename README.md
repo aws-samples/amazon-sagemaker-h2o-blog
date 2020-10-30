@@ -1,5 +1,5 @@
 # amazon-sagemaker-h2o-blog
-> Code and resources for the [Train and Serve H2O Models using Amazon Sagemaker]() AWS ML Blog Post. It explains how to build an end-to-end solution to train and deploy H2O ML Framework workloads using Amazon Sagemaker.
+> Code and resources for the [Training and serving H2O Models using Amazon Sagemaker](https://aws.amazon.com/blogs/machine-learning/training-and-serving-h2o-models-using-amazon-sagemaker/) AWS ML Blog Post. It explains how to build an end-to-end solution to train and deploy H2O ML Framework workloads using Amazon Sagemaker.
 
 
 ## 📋 Table of content
