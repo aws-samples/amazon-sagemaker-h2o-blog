@@ -15,7 +15,7 @@
 
 ## 🔰 Description
 
-This project builds the infrastucture required to implement an Amazon Sagemaker Model Hyperparameter Tuning and Auto-Scaling Model Endpoint Deployment Process for an end-to-end solution to train and deploy H2O ML Framework workloads. It provides the source code required to execute the [Train and Serve H2O Models using Amazon Sagemaker]() AWS ML Blog Post.
+This project builds the infrastucture required to implement an Amazon Sagemaker Model Hyperparameter Tuning and Auto-Scaling Model Endpoint Deployment Process for an end-to-end solution to train and deploy H2O ML Framework workloads. It provides the source code required to execute the [Training and serving H2O Models using Amazon Sagemaker](https://aws.amazon.com/blogs/machine-learning/training-and-serving-h2o-models-using-amazon-sagemaker/) AWS ML Blog Post.
 
 This project creates also 3 nested serverless applications defined by [ML Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider), [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Model Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-deployer) AWS blocks. 
 
