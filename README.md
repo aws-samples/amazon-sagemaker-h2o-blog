@@ -17,9 +17,9 @@
 
 This project builds the infrastucture required to implement an Amazon Sagemaker Model Hyperparameter Tuning and Auto-Scaling Model Endpoint Deployment Process for an end-to-end solution to train and deploy H2O ML Framework workloads. It provides the source code required to execute the [Training and serving H2O Models using Amazon Sagemaker](https://aws.amazon.com/blogs/machine-learning/training-and-serving-h2o-models-using-amazon-sagemaker/) AWS ML Blog Post.
 
-This project creates also 3 nested serverless applications defined by [ML Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider), [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Model Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-deployer) AWS blocks. 
+This project creates also 3 nested serverless applications defined by [ML Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider), [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) AWS blocks. 
 
-This project creates a parent Step Function called `ModelTuningWithEndpointDeploymentStateMachine` which natively integrates with Amazon Step Functions entities that are defined by [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Model Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-deployer) AWS blocks. Below is the screenshot of `ModelTuningWithEndpointDeploymentStateMachine`, which is composing 2 nested workflows:
+This project creates a parent Step Function called `ModelTuningWithEndpointDeploymentStateMachine` which natively integrates with Amazon Step Functions entities that are defined by [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) and [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) AWS blocks. Below is the screenshot of `ModelTuningWithEndpointDeploymentStateMachine`, which is composing 2 nested workflows:
 
 <p align="center">
   <img width="350" src="sagemaker-model-tuner-with-endpoint-deployment/assets/sfn_screenshot_1.png" />
@@ -322,12 +322,12 @@ This library is licensed under the Amazon Software License.
 
 ## 👀 See also
 
- - The [Train and Serve H2O Models using Amazon Sagemaker]() AWS ML Blog Post.
+ - The [Train and Serve H2O Models using Amazon Sagemaker](https://aws.amazon.com/blogs/machine-learning/training-and-serving-h2o-models-using-amazon-sagemaker/) AWS ML Blog Post.
  - The [AWS Sagemaker](https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html) official documentation.
  - The [AWS Steps Function](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html) official documentation.
  - The [Sagemaker Model Tuner with Endpoint Deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment) AWS Block.
  - The [Sagemaker Model Tuner](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner) AWS Block.
- - The [Sagemaker Model Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-deployer) AWS Block.
+ - The [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) AWS Block.
  - The [ML Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider) AWS Block.
  - The [H2O GBM Trainer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) AWS Block.
  - The [H2O GBM Predictor](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor) AWS Block.
