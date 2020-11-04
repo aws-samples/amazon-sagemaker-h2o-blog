@@ -3,7 +3,7 @@
 </p>
 
 # h2o-gbm-predictor
-> An AWS Block to create a Sagemaker Model Inference Docker image for H2O GBM Predictor.
+> A project to create a Sagemaker Model Inference Docker image for H2O GBM Predictor.
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](contributing.md)
 [![CodeBuild](https://s3-us-west-2.amazonaws.com/codefactory-us-west-2-prod-default-build-badges/passing.svg)](https://s3-us-west-2.amazonaws.com/codefactory-us-west-2-prod-default-build-badges/passing.svg)
@@ -138,7 +138,7 @@ Prediction Thread http-nio-8080-exec-5 is closed: 1  milliseconds
 
 This Docker Image is created to support [Bring Your Own Model](https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms.html) approach for Amazon Sagemaker Model Deployment process. 
 
-You can use this algorithm as a standalone ECR resource or an input for other AWS blocks [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) or [Sagemaker Model Tuner with Endpoint Deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment).
+You can use this algorithm as a standalone ECR resource or an input for other projects [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) or [Sagemaker Model Tuner with Endpoint Deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment).
 
 ## 👀 See also
 
@@ -147,7 +147,7 @@ In this section, you can list the projects and blocks on which you depend, or wh
  - The [Docker](https://docs.docker.com/) official documentation.
  - The [AWS Sagemaker](https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html) official documentation.
  - The [H2O Gradient Boosting Machines (GBM) Estimator](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiHhOn5l4nrAhViTRUIHT51BjsQFjAAegQIARAC&url=https%3A%2F%2Fdocs.h2o.ai%2Fh2o%2Flatest-stable%2Fh2o-docs%2Fdata-science%2Fgbm.html&usg=AOvVaw1kTu8JkgeTw_lasTS927vl) official documentation.
- - The [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) AWS Block.
- - The [Sagemaker Model Tuner with Endpoint Deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment) AWS Block.
- - The [H2O GBM Trainer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) AWS Block.
-- The [H2O GBM Algorithm Resource](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-algorithm-resource) AWS Block.
+ - The [Sagemaker Endpoint Deployer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-endpoint-deployer) project.
+ - The [Sagemaker Model Tuner with Endpoint Deployment](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment) project.
+ - The [H2O GBM Trainer](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-trainer) project.
+- The [H2O GBM Algorithm Resource](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-algorithm-resource) project.

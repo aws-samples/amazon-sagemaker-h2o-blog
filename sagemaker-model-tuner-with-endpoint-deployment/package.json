@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/sagemaker-model-tuner-with-endpoint-deployment"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog.git"
   },
   "keywords": [
     "machine-learning",
@@ -34,14 +34,14 @@
   "author": "Anil Sener <senera@amazon.com>",
   "license": "ASL",
   "bugs": {
-    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/issues/new"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "npm install && cd node_modules/@aws-blocks/ml-parameter-provider && sam build --template-file cloudformation.yml && aws s3 rm --recursive s3://${npm_config_s3bucket}/ml-parameter-provider-package && sam package --output-template-file packaged.yaml --s3-bucket ${npm_config_s3bucket} --s3-prefix ml-parameter-provider-package && cd ../../../ && sam build --template-file cloudformation.yml && aws s3 rm --recursive s3://${npm_config_s3bucket}/ml-worklow-package && sam package  --output-template-file packaged.yaml  --s3-bucket ${npm_config_s3bucket} --s3-prefix ml-worklow-package && sam deploy --template-file packaged.yaml --region ${npm_config_region} --stack-name sagemaker-model-tuner-with-endpoint-deployment --s3-bucket ${npm_config_s3bucket}  --s3-prefix ml-worklow-package --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides Environment=${npm_config_environment} ParameterStorePath=${npm_config_paramstorepath} ManifestS3BucketName=${npm_config_s3bucket} ManifestS3BucketKeyPrefix=manifests/  HyperparametersS3BucketName=${npm_config_s3bucket} HyperparametersS3Key=hyperparameters.json ParametersS3BucketName=${npm_config_s3bucket} ParametersS3Key=ml-parameters.json",
     "deploy-win": "npm install && cd node_modules/@aws-blocks/ml-parameter-provider && aws s3 rm --recursive s3://%npm_config_s3bucket%/ml-parameter-provider-package && sam package --template-file ../../../../ml-parameter-provider/.aws-sam/build/template.yaml --output-template-file packaged.yaml --s3-bucket %npm_config_s3bucket% --s3-prefix ml-parameter-provider-package && cd ../../../ && sam build --template-file cloudformation.yml && aws s3 rm --recursive s3://%npm_config_s3bucket%/ml-worklow-package && sam package  --output-template-file packaged.yaml  --s3-bucket %npm_config_s3bucket% --s3-prefix ml-worklow-package && sam deploy --template-file packaged.yaml --region %npm_config_region% --stack-name sagemaker-model-tuner-with-endpoint-deployment --s3-bucket %npm_config_s3bucket%  --s3-prefix ml-worklow-package --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides Environment=%npm_config_environment% ParameterStorePath=%npm_config_paramstorepath% ManifestS3BucketName=%npm_config_s3bucket% ManifestS3BucketKeyPrefix=manifests/  HyperparametersS3BucketName=%npm_config_s3bucket% HyperparametersS3Key=hyperparameters.json ParametersS3BucketName=%npm_config_s3bucket% ParametersS3Key=ml-parameters.json"
   },
-  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/sagemaker-model-tuner-with-endpoint-deployment",
+  "homepage": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner-with-endpoint-deployment",
   "dependencies": {
     "@aws-blocks/sagemaker-model-tuner": "../sagemaker-model-tuner",
     "@aws-blocks/sagemaker-endpoint-deployer": "../sagemaker-endpoint-deployer",

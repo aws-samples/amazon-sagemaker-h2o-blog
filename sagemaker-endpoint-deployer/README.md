@@ -49,7 +49,7 @@ Metric | Value
  
 ## 🔰 Description
 
-This block is to build the infrastucture required to implement an Auto-scaling Amazon Sagemaker Model Endpoint Deployment Process given that at least one [Amazon Sagemaker Model Resource](https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html) is already created. It creates a Step Function called `AutoScalingModelEndpointDeploymentStateMachine` which natively integrates with Amazon Sagemaker, AWS Lambda & Amazon SNS entities that are created. This block can be used both as a standalone project or a dependency for other AWS blocks which will involves an Auto-scaling Amazon Sagemaker Model Endpoint at any stage.
+This block is to build the infrastucture required to implement an Auto-scaling Amazon Sagemaker Model Endpoint Deployment Process given that at least one [Amazon Sagemaker Model Resource](https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html) is already created. It creates a Step Function called `AutoScalingModelEndpointDeploymentStateMachine` which natively integrates with Amazon Sagemaker, AWS Lambda & Amazon SNS entities that are created. This block can be used both as a standalone project or a dependency for other projects which will involves an Auto-scaling Amazon Sagemaker Model Endpoint at any stage.
 
 
 <p align="center">
@@ -171,5 +171,5 @@ Below is a screenshot of the `Endpoint Runtime Settings` associated with the aut
 
  - The [AWS Sagemaker](https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html) official documentation.
  - The [AWS Steps Function](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html) official documentation.
- - The [ML Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider) AWS Block.
- - The [H2O GBM Predictor](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor) AWS Block.
+ - The [ML Parameter Provider](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider) project.
+ - The [H2O GBM Predictor](https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor) project.

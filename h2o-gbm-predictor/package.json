@@ -1,7 +1,7 @@
 {
   "name": "@aws-blocks/h2o-gbm-predictor",
   "version": "1.0.0",
-  "description": "🧠 An AWS Block to create a Sagemaker Model Inference Docker image for H2O GBM Predictor.",
+  "description": "🧠 A project to create a Sagemaker Model Inference Docker image for H2O GBM Predictor.",
   "block": {
     "type": "resource",
     "audience": [
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/h2o-gbm-predictor"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog.git"
   },
   "keywords": [
     "machine-learning",
@@ -36,7 +36,7 @@
   "author": "Anil Sener <senera@amazon.com>",
   "license": "ASL",
   "bugs": {
-    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/issues/new"
   },
   "scripts": {
     "build": "mvn clean package && docker build -t h2o-gbm-predictor . --build-arg build_mode=${npm_config_build_mode}",
@@ -49,5 +49,5 @@
     "deploy": "npm run build --build_mode=aws && bash push_docker_image.sh h2o-gbm-predictor ${npm_config_region}",
     "deploy-win": "npm run build-win --build_mode=aws && push_docker_image.bat h2o-gbm-predictor %npm_config_region%"
   },
-  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/h2o-gbm-predictor"
+  "homepage": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-predictor"
 }

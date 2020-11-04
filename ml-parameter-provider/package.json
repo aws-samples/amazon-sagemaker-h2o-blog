@@ -44,7 +44,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/ml-parameter-provider"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog.git"
   },
   "keywords": [
     "machine-learning",
@@ -62,7 +62,7 @@
     "deploy": "npm run postinstall && sam deploy --guided"
   },
   "bugs": {
-    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/issues/new"
   },
-  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/ml-parameter-provider"
+  "homepage": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/ml-parameter-provider"
 }

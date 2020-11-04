@@ -32,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/sagemaker-model-tuner"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog.git"
   },
   "keywords": [
     "machine-learning",
@@ -43,12 +43,12 @@
   "author": "Anil Sener <senera@amazon.com>",
   "license": "ASL",
   "bugs": {
-    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/issues/new"
   },
   "scripts": {
     "deploy": "npm run postinstall && sam deploy --guided",
     "postinstall": "sam build --template-file cloudformation.yml",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/sagemaker-model-tuner"
+  "homepage": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/sagemaker-model-tuner"
 }

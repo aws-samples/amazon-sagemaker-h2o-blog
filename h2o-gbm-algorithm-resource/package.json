@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-codecommit.us-west-2.amazonaws.com/v1/repos/h2o-gbm-algorithm-resource"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog.git"
   },
   "keywords": [
     "machine-learning",
@@ -35,7 +35,7 @@
   "author": "Anil Sener <senera@amazon.com>",
   "license": "ASL",
   "bugs": {
-    "url": "https://issues.amazon.com/issues/create?assignedFolder=c8ad2f41-12e1-4a21-81d4-5d8fd0835837"
+    "url": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/issues/new"
   },
   "scripts": {
     "postinstall": "sam build --template-file cloudformation.yml",
@@ -43,5 +43,5 @@
     "deploy-win": "npm run postinstall && sam deploy --stack-name h2o-gbm-algorithm-resource --region %npm_config_region% --s3-bucket %npm_config_s3bucket% --capabilities CAPABILITY_IAM --parameter-overrides Environment=%npm_config_environment% TrainingImageURI=%npm_config_account_id%.dkr.ecr.%npm_config_region%.amazonaws.com/%npm_config_training_image_name% InferenceImageURI=%npm_config_account_id%.dkr.ecr.%npm_config_region%.amazonaws.com/%npm_config_inference_image_name%",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://aws-blocks.io/package.html?name=@aws-blocks/h2o-gbm-algorithm-resource"
+  "homepage": "https://github.com/aws-samples/amazon-sagemaker-h2o-blog/tree/master/h2o-gbm-algorithm-resource"
 }
